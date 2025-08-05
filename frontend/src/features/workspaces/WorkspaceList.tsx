@@ -1,32 +1,40 @@
-import { useGetWorkspacesQuery } from "@/api/apiSlice"
+import { useGetWorkspacesQuery } from "@/api/apiSlice";
 import WorkspaceExcerpt from "./WorkspaceExcerpt";
 const WorkspaceList = () => {
   const userId = 1;
-  const { data:workspaces, isLoading, isError, error, isSuccess} = useGetWorkspacesQuery(userId);
+  const {
+    data: workspaces,
+    isLoading,
+    isError,
+    error,
+    isSuccess,
+  } = useGetWorkspacesQuery(userId);
   let content;
 
   if (isLoading) {
-    content = <p>Loading...</p>
+    content = <p>Loading...</p>;
   } else if (isSuccess) {
     if (workspaces) {
       content = workspaces.data.map((workspace) => {
-        return <WorkspaceExcerpt key={workspace.id} workspace={workspace}/>
-      })
+        return <WorkspaceExcerpt key={workspace.id} workspace={workspace} />;
+      });
     } else {
-      content = <p>No Workspace!!</p>
+      content = <p>No Workspace!!</p>;
     }
   } else if (isError) {
-    if ('status' in error) {
-    content = <p>Error: {error.status}</p>;
-  } else {
-    content = <p>An unexpected error occurred.</p>;
-  }
+    if ("status" in error) {
+      content = <p>Error: {error.status}</p>;
+    } else {
+      content = <p>An unexpected error occurred.</p>;
+    }
   }
   return (
-    <div>
-      {content}
+    <div className="flex justify-center">
+      <div className="grid gap-6 max-w-[1200px] grid-cols-[repeat(auto-fit,minmax(250px,1fr))]">
+        {content}
+      </div>
     </div>
-  )
-}
+  );
+};
 
-export default WorkspaceList
+export default WorkspaceList;

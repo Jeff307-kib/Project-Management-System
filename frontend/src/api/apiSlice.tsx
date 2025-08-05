@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import type { GetWorkspacesResponse } from "@/types/workspace.d";
+import type { GetWorkspacesResponse, AddWorkspaceResponse, NewWorkspace } from "@/types/workspace.d";
 
 export const apiSlice = createApi({
     reducerPath: 'api',
@@ -7,7 +7,7 @@ export const apiSlice = createApi({
         baseUrl: "http://localhost/projectManagementSystem/backend/public/",
         credentials: 'include',
     }),
-    tagTypes: ['workspace'],
+    tagTypes: ['Workspace'],
 
     endpoints: (builder) => ({
         getWorkspaces: builder.query<GetWorkspacesResponse, number>({
@@ -15,9 +15,17 @@ export const apiSlice = createApi({
                 url: `getWorkspaces.php?userId=${userId}`,
                 method: 'GET'
             }),
-            providesTags: ['workspace']
+            providesTags: ['Workspace']
+        }),
+        addWorkspace: builder.mutation<AddWorkspaceResponse, NewWorkspace>({
+            query:(workspace) => ({
+                url: 'addWorkspace.php',
+                method: 'POST',
+                body: workspace,
+            }),
+            invalidatesTags: ['Workspace']
         })
     }),
 })
 
-export const { useGetWorkspacesQuery } = apiSlice;
+export const { useGetWorkspacesQuery, useAddWorkspaceMutation } = apiSlice;
