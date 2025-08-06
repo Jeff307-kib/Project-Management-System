@@ -48,4 +48,43 @@
 
             return false;
         }
+
+        public function fetchWorkspaceById($workspaceId, $userId) {
+            $this->conn = Connection::connect();
+            $sql = "
+                SELECT w.id, w.name, w.created_at, w.description,
+                uw.role, uw.joined_at
+                FROM workspaces w
+                JOIN user_workspace uw ON w.id = uw.workspace_id
+                WHERE w.id = :wid AND uw.user_id = :uid
+            ";
+            $this->stmt = $this->conn->prepare($sql);
+            $this->stmt->bindParam(':wid', $workspaceId);
+            $this->stmt->bindParam(':uid', $userId);
+
+            if ($this->stmt->execute()) {
+                return $this->stmt->fetch(PDO::FETCH_ASSOC);
+            }
+
+            return false;
+        }
+
+        public function updateWorkspace($name, $description, $workspaceId) {
+            $this->conn = Connection::connect();
+            $sql = "
+                UPDATE workspaces
+                SET name = :na, description = :de, updated_at = NOW()
+                WHERE id = :wid
+            ";
+            $this->stmt = $this->conn->prepare($sql);
+            $this->stmt->bindParam(":na", $name);
+            $this->stmt->bindParam(":de", $description);
+            $this->stmt->bindParam(":wid", $workspaceId);
+
+            if ($this->stmt->execute()) {
+                return true;
+            }
+
+            return false;
+        }
     }

@@ -5,20 +5,34 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { useAddWorkspaceMutation } from "@/api/apiSlice";
-import { useState } from "react";
+import { useAddWorkspaceMutation, useEditWorkspaceMutation } from "@/api/apiSlice";
+import { useState, useEffect } from "react";
+import type { WorkspaceModalProps } from "@/types/workspace.d";
 
-interface AddWorkspaceModalProps {
-  isOpen: boolean;
-  setOpen: () => void;
-}
+type Props = WorkspaceModalProps
 
-const AddWorkspaceModal = ({ isOpen, setOpen }: AddWorkspaceModalProps) => {
+const WorkspaceModal = ({ label, isOpen, setOpen, workspace }: Props) => {
+  const isEdit = !!workspace
+  console.log(isEdit)
+
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [formError, setFormError] = useState("");
 
-  const [addWorkspace, { isLoading }] = useAddWorkspaceMutation();
+  useEffect(() => {
+    if (workspace) {
+      console.log("Opening modal with workspace:", workspace);
+      setName(workspace.name || "")
+      setDescription(workspace.description || "")
+    } else {
+      setName("")
+      setDescription("")
+    }
+    setFormError("")
+  }, [workspace, isOpen])
+
+  const [addWorkspace, { isLoading: isAdding }] = useAddWorkspaceMutation();
+  const [editWorkspace, {isLoading: isEditting }] = useEditWorkspaceMutation();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -29,11 +43,21 @@ const AddWorkspaceModal = ({ isOpen, setOpen }: AddWorkspaceModalProps) => {
     }
 
     try {
-      const res = await addWorkspace({
-        name: name.trim(),
-        description: description.trim(),
-      }).unwrap();
-      console.log("Workspace added Successfully.", res);
+      if (isEdit) {
+        await editWorkspace({
+          workspaceId: workspace.id,
+          name: name.trim(),
+          description: description.trim(),
+        }).unwrap();
+        console.log("Workspace updated successfully.");
+      } else {
+        await addWorkspace({
+          name: name.trim(),
+          description: description.trim(),
+        }).unwrap();
+        console.log("Workspace added successfully.");
+      }
+
       setName("");
       setDescription("");
       setOpen();
@@ -52,7 +76,7 @@ const AddWorkspaceModal = ({ isOpen, setOpen }: AddWorkspaceModalProps) => {
     <Dialog open={isOpen} onOpenChange={setOpen}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create a new workspace</DialogTitle>
+          <DialogTitle>{label} workspace</DialogTitle>
         </DialogHeader>
         <DialogDescription>
           Workspaces help you organize your tasks and projects.
@@ -78,9 +102,9 @@ const AddWorkspaceModal = ({ isOpen, setOpen }: AddWorkspaceModalProps) => {
           <button
             type="submit"
             className="bg-primary text-white px-4 py-2 rounded cursor-pointer"
-            disabled={isLoading}
+            disabled={isAdding || isEditting}
           >
-            Create
+            {label}
           </button>
         </form>
       </DialogContent>
@@ -88,4 +112,4 @@ const AddWorkspaceModal = ({ isOpen, setOpen }: AddWorkspaceModalProps) => {
   );
 };
 
-export default AddWorkspaceModal;
+export default WorkspaceModal;

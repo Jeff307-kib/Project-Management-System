@@ -1,5 +1,6 @@
 import { useGetWorkspacesQuery } from "@/api/apiSlice";
 import WorkspaceExcerpt from "./WorkspaceExcerpt";
+import TopBar from "@/features/workspaces/TopBar";
 const WorkspaceList = () => {
   const userId = 1;
   const {
@@ -29,11 +30,14 @@ const WorkspaceList = () => {
     }
   }
   return (
-    <div className="flex justify-center">
-      <div className="grid gap-6 max-w-[1200px] grid-cols-[repeat(auto-fit,minmax(250px,1fr))]">
-        {content}
+    <>
+      <TopBar />
+      <div className="flex justify-center">
+        <div className="grid gap-6 max-w-[1200px] grid-cols-[repeat(auto-fit,minmax(250px,1fr))]">
+          {content}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
