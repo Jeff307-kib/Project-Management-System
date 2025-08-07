@@ -1,47 +1,55 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Progress } from "@/components/ui/progress"; // Important: Import the Progress component
+import { Progress } from "@/components/ui/progress";
 import { GripVertical } from "lucide-react";
 import type { Workspace } from "@/types/workspace.d";
 import { format } from "date-fns";
+import { useNavigate } from "react-router-dom";
 
 interface Props {
   workspace: Workspace;
 }
 
 const WorkspaceExcerpt = ({ workspace }: Props) => {
-  // Example progress - you would calculate this based on your data
+  const navigate = useNavigate();
   const completedTasks = 2;
   const totalTasks = 8;
   const progressPercentage = (completedTasks / totalTasks) * 100;
 
   const formattedDate = format(new Date(workspace.created_at), "MMM d yyyy");
+
   let description;
   if (workspace.description != null) {
-    description = workspace.description
+    description = workspace.description;
   } else {
-    description = null
+    description = null;
   }
 
+  let workspaceName;
+  if (workspace.name.length > 45) {
+    workspaceName = workspace.name.substring(0, 45) + "...";
+  } else {
+    workspaceName = workspace.name;
+  }
+  const workspaceId = workspace.id;
+  const clickWorkspace = () => {
+    navigate(`${workspaceId}`);
+  };
+
   return (
-    <div className="group flex flex-col justify-between rounded-lg border bg-card text-card-foreground shadow-sm transition-shadow hover:shadow-md w-72">
-      {/* Card Header */}
+    <div className="group flex flex-col justify-between rounded-lg border bg-card text-card-foreground shadow-sm transition-shadow hover:shadow-md w-72" onClick={clickWorkspace}>
       <div className="flex items-start justify-between p-4">
         <div className="space-y-1.5">
-          <h3 className="text-lg font-semibold leading-none tracking-tight">
-            {workspace.name}
+          <h3 className="text-lg font-semibold leading-6 tracking-tight ">
+            {workspaceName}
           </h3>
-          <p className="text-sm text-muted-foreground">
-            {description}
-          </p>
+          <p className="text-sm text-muted-foreground">{description}</p>
         </div>
         <button className="text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100">
           <GripVertical className="h-5 w-5" />
         </button>
       </div>
 
-      {/* Card Footer with Progress and Avatars */}
       <div className="flex flex-col gap-4 p-4 pt-0">
-        {/* Progress Bar and Stats */}
         <div>
           <div className="mb-1 flex items-center justify-between">
             <p className="text-xs font-medium text-muted-foreground">
@@ -54,7 +62,6 @@ const WorkspaceExcerpt = ({ workspace }: Props) => {
           <Progress value={progressPercentage} className="h-2" />
         </div>
 
-        {/* Date and Avatar Stack */}
         <div className="flex items-center justify-between">
           <p className="text-xs text-muted-foreground font-medium">
             {formattedDate}

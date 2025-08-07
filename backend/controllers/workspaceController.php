@@ -112,4 +112,30 @@ class workspaceController
             echo json_encode(['error' => $e->getMessage()]);
         }
     }
+
+    function deleteWorkspace() {
+        $data = json_decode(file_get_contents("php://input"), true);
+        
+        if (empty($data['workspaceId'])) {
+            http_response_code(400);
+            echo json_encode(['error' => 'No worksapce Id found']);
+            return;
+        }
+
+        try {
+            $workspaceId = $data['workspaceId'];
+            if ($this->workspace->dropWorkspace($workspaceId)) {
+                echo json_encode([
+                    'success' => true,
+                    'message' => "Delete Success!",
+                ]);
+            } else {
+                http_response_code(401);
+                echo json_encode(['error' => 'Invalid workspace Id']);
+            }
+        } catch (Exception $e) {
+            http_response_code(400);
+            echo json_encode(['error' => $e->getMessage()]);
+        }
+    }
 }

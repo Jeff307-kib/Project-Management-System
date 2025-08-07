@@ -1,3 +1,8 @@
 export interface AddButton {
-    lable: string,
+    label: string,
+}
+
+export interface DeleteButtonProps {
+    label: string,
+    id: number
 }

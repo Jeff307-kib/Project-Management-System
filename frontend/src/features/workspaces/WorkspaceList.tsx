@@ -1,6 +1,7 @@
 import { useGetWorkspacesQuery } from "@/api/apiSlice";
 import WorkspaceExcerpt from "./WorkspaceExcerpt";
 import TopBar from "@/features/workspaces/TopBar";
+
 const WorkspaceList = () => {
   const userId = 1;
   const {
@@ -10,8 +11,8 @@ const WorkspaceList = () => {
     error,
     isSuccess,
   } = useGetWorkspacesQuery(userId);
-  let content;
 
+  let content;
   if (isLoading) {
     content = <p>Loading...</p>;
   } else if (isSuccess) {

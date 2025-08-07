@@ -16,7 +16,7 @@ export interface NewWorkspace {
   description: string | null;
 }
 
-export interface AddWorkspaceResponse {
+export interface WorkspaceMutationResponse {
   success: boolean;
   message: string;
 }

@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import type { GetWorkspacesResponse, AddWorkspaceResponse, NewWorkspace, EditWorkspace, GetWorkspaceByIdResponse } from "@/types/workspace.d";
+import type { GetWorkspacesResponse, WorkspaceMutationResponse, NewWorkspace, EditWorkspace, GetWorkspaceByIdResponse } from "@/types/workspace.d";
 
 export const apiSlice = createApi({
     reducerPath: 'api',
@@ -17,7 +17,7 @@ export const apiSlice = createApi({
             }),
             providesTags: ['Workspace']
         }),
-        addWorkspace: builder.mutation<AddWorkspaceResponse, NewWorkspace>({
+        addWorkspace: builder.mutation<WorkspaceMutationResponse, NewWorkspace>({
             query:(workspace) => ({
                 url: 'addWorkspace.php',
                 method: 'POST',
@@ -32,15 +32,30 @@ export const apiSlice = createApi({
             }),
             providesTags: ['Workspace']
         }),
-        editWorkspace: builder.mutation<AddWorkspaceResponse, EditWorkspace>({
+        editWorkspace: builder.mutation<WorkspaceMutationResponse, EditWorkspace>({
             query:(workspace) => ({
                 url: 'editWorkspace.php',
                 method: 'POST',
                 body: workspace,
             }),
             invalidatesTags: ['Workspace']
+        }),
+        deleteWorkspace: builder.mutation<WorkspaceMutationResponse, number>({
+            query: (workspaceId) => ({
+                url: `deleteWorkspace.php?workspaceId=${workspaceId}`,
+                method: 'DELETE',
+                body: { workspaceId }
+            }),
+            invalidatesTags: ['Workspace']
+        }),
+        deleteTask: builder.mutation<WorkspaceMutationResponse, number>({
+            query: (workspaceId) => ({
+                url: `deleteWorkspace.php?workspaceId=${workspaceId}`,
+                method: 'DELETE',
+                body: { workspaceId }
+            })
         })
     }),
 })
 
-export const { useGetWorkspacesQuery, useGetWorkspaceByIdQuery ,useAddWorkspaceMutation, useEditWorkspaceMutation } = apiSlice;
+export const { useGetWorkspacesQuery, useGetWorkspaceByIdQuery ,useAddWorkspaceMutation, useEditWorkspaceMutation, useDeleteWorkspaceMutation, useDeleteTaskMutation } = apiSlice;

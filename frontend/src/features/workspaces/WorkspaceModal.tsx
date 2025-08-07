@@ -90,7 +90,7 @@ const WorkspaceModal = ({ label, isOpen, setOpen, workspace }: Props) => {
             value={name}
             className="border rounded px-3 py-2"
             onChange={(e) => setName(e.target.value)}
-            // required
+            required
           />
           <input
             type="text"

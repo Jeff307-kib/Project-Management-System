@@ -87,4 +87,17 @@
 
             return false;
         }
+
+        public function dropWorkspace($workspaceId) {
+            $this->conn = Connection::connect();
+            $sql = "DELETE FROM workspaces WHERE id = :wid";
+            $this->stmt = $this->conn->prepare($sql);
+            $this->stmt->bindParam(":wid", $workspaceId);
+
+            if ($this->stmt->execute()) {
+                return true;
+            }
+
+            return false;
+        }
     }
