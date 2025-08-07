@@ -1,6 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Input } from "@/components/ui/input"; // Make sure to import the Input component
-import { Bell, Search } from "lucide-react";
+import { Bell } from "lucide-react";
 
 const Header = () => {
   return (
@@ -26,19 +25,6 @@ const Header = () => {
           </a>
         </div>
 
-        {/* Middle: Search Box */}
-        <div className="flex flex-1 items-center justify-center">
-          <div className="relative w-full max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search workspaces..."
-              className="w-full pl-9 bg-background focus:bg-card"
-            />
-          </div>
-        </div>
-
-        {/* Right Side: Icons and Avatar */}
         <div className="flex flex-1 items-center justify-end space-x-4">
           <div className="relative">
             <Bell className="h-5 w-5 text-muted-foreground transition-colors hover:text-foreground cursor-pointer" />
