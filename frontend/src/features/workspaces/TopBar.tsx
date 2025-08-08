@@ -1,10 +1,14 @@
 import AddButton from "@/features/utils/AddButton";
 import SearchBox from "@/features/utils/SearchBox";
-import Filter from '@/features/workspaces/Filter'
+import Filter from '@/features/utils/Filter'
 import { useState } from "react";
 import WorkspaceModal from "@/features/workspaces/WorkspaceModal";
 
-const TopBar = () => {
+type Props = {
+  filter: React.Dispatch<React.SetStateAction<string>>
+}
+
+const TopBar = ({filter}: Props) => {
   const [isOpen, setIsOpen] = useState(false);
   const label = "Create"
 
@@ -20,7 +24,7 @@ const TopBar = () => {
       <AddButton label="Workspace" onClick={handleAdd} />
       <WorkspaceModal isOpen={isOpen} setOpen={setOpen} label={label}/>
       <SearchBox />
-      <Filter />
+      <Filter onFilterChange={filter}/>
     </div>
   );
 };

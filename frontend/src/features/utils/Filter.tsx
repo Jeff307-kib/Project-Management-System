@@ -4,23 +4,26 @@ import {
   MenubarItem,
   MenubarMenu,
   MenubarSeparator,
-  MenubarShortcut,
+  // MenubarShortcut,
   MenubarTrigger,
 } from "@/components/ui/menubar";
 
-const Filter = () => {
+import type { FilterProps } from "@/types/utils.d";
+
+const Filter = ({onFilterChange}: FilterProps) => {
   return (
     <Menubar>
         <MenubarMenu>
           <MenubarTrigger>Filter</MenubarTrigger>
           <MenubarContent>
-            <MenubarItem>
-              Date <MenubarShortcut>⌘T</MenubarShortcut>
+            <MenubarItem onClick={() => onFilterChange("date")}>
+              Date
+              {/* Date <MenubarShortcut>⌘T</MenubarShortcut> */}
             </MenubarItem>
             <MenubarSeparator />
-            <MenubarItem>Favourite</MenubarItem>
+            <MenubarItem onClick={() => onFilterChange("alphabet")}>Alphabet</MenubarItem>
             <MenubarSeparator />
-            <MenubarItem>Task</MenubarItem>
+            <MenubarItem>Favourite</MenubarItem> {/* Would handle this later */}
           </MenubarContent>
         </MenubarMenu>
       </Menubar>

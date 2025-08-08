@@ -9,9 +9,10 @@ import { useAddWorkspaceMutation, useEditWorkspaceMutation } from "@/api/apiSlic
 import { useState, useEffect } from "react";
 import type { WorkspaceModalProps } from "@/types/workspace.d";
 
-type Props = WorkspaceModalProps
+import { SuccessToast } from "../utils/SuccessToast";
 
-const WorkspaceModal = ({ label, isOpen, setOpen, workspace }: Props) => {
+
+const WorkspaceModal = ({ label, isOpen, setOpen, workspace }: WorkspaceModalProps) => {
   const isEdit = !!workspace
   console.log(isEdit)
 
@@ -49,12 +50,14 @@ const WorkspaceModal = ({ label, isOpen, setOpen, workspace }: Props) => {
           name: name.trim(),
           description: description.trim(),
         }).unwrap();
+        SuccessToast("Workspace Updated", "Your workspace was updated successfully.")
         console.log("Workspace updated successfully.");
       } else {
         await addWorkspace({
           name: name.trim(),
           description: description.trim(),
         }).unwrap();
+        SuccessToast("Workspace Created", "Your workspace was added successfully.")
         console.log("Workspace added successfully.");
       }
 
@@ -63,7 +66,6 @@ const WorkspaceModal = ({ label, isOpen, setOpen, workspace }: Props) => {
       setOpen();
     } catch (err) {
       console.log("Workspace add Failed", err);
-
       if (err && typeof err === "object" && "data" in err) {
         const typedErr = err as { data?: { error?: string } };
         setFormError(typedErr.data?.error || "Something went wrong!");
