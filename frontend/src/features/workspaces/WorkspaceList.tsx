@@ -55,9 +55,12 @@ const WorkspaceList = () => {
       content = <p>An unexpected error occurred.</p>;
     }
   }
+
+  // const profileImage = "uploads/profiles/test.png"
   return (
     <>
       <TopBar filter={setFilterType} />
+      {/* <img src={`http://localhost/projectManagementSystem/backend/public/${profileImage}`} alt="where" /> */}
       <div className="flex justify-center">
         <div className="grid gap-6 max-w-[1200px] grid-cols-[repeat(auto-fit,minmax(250px,1fr))]">
           {content}
