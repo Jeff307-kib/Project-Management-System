@@ -1,7 +1,18 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Bell } from "lucide-react";
+import { useEffect } from "react";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/app/store";
 
 const Header = () => {
+  const user = useSelector((state: RootState) => state.auth.user);
+  useEffect(() => {
+    if (user) {
+      console.log("Logged in user state:", user);
+    } else {
+      console.log("No user is currently logged in.");
+    }
+  }, [user]);
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4">
       <div className="container flex h-14 max-w-screen-2xl items-center">

@@ -4,10 +4,9 @@ import { useGetWorkspacesQuery } from "@/api/apiSlice";
 import WorkspaceExcerpt from "./WorkspaceExcerpt";
 import TopBar from "@/features/workspaces/TopBar";
 
+import { Skeleton } from "@/components/ui/skeleton";
 
 const WorkspaceList = () => {
-  const userId = 1;
-
   const [filterType, setFilterType] = useState("date");
 
   const {
@@ -16,14 +15,14 @@ const WorkspaceList = () => {
     isError,
     error,
     isSuccess,
-  } = useGetWorkspacesQuery(userId);
+  } = useGetWorkspacesQuery();
 
   const workspaces = useMemo(() => {
     return response?.data ?? [];
   }, [response]);
 
-  console.log(workspaces)
-  console.log(response?.data)
+  console.log(workspaces);
+  console.log(response?.data);
 
   const filteredWorkspaces = useMemo(() => {
     switch (filterType) {
@@ -32,21 +31,28 @@ const WorkspaceList = () => {
       case "date":
       default:
         return [...workspaces].sort(
-          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          (a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         );
     }
   }, [workspaces, filterType]);
-  
+
   let content;
   if (isLoading) {
-    content = <p>Loading...</p>;
+    content = (
+      <div className="grid gap-6 max-w-[1200px] grid-cols-[repeat(auto-fit,minmax(250px,1fr))]">
+        <Skeleton className="w-full h-32" />
+        <Skeleton className="w-full h-32" />
+        <Skeleton className="w-full h-32" />
+      </div>
+    );
   } else if (isSuccess) {
-    if (workspaces) {
+    if (workspaces.length > 0) {
       content = filteredWorkspaces.map((workspace) => {
         return <WorkspaceExcerpt key={workspace.id} workspace={workspace} />;
       });
     } else {
-      content = <p>No Workspace!!</p>;
+      content = <p>No Workspace Available! Create one to get Started!</p>;
     }
   } else if (isError) {
     if ("status" in error) {

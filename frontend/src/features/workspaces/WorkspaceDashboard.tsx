@@ -54,11 +54,13 @@ const WorkspaceDashboard = () => {
   };
 
   let workspaceName;
-  if (data?.data.name) {
-    workspaceName = data?.data.name.substring(0, 45) + "...";
+  const name = data?.data?.name
+  if (name && name.length > 45) {
+    workspaceName = name.substring(0, 45) + "...";
   } else {
-    workspaceName = data?.data.name;
+    workspaceName = name;
   }
+
   let content;
   if (isLoading) {
     content = <p>Loading...</p>;

@@ -9,8 +9,9 @@ import type {
 } from "@/types/workspace.d";
 
 import type {
-  RegisterUserResponse,
+  RegistrationResponse,
   RegisterUser,
+  Loginuser,
 } from "@/types/users.d"
 
 export const apiSlice = createApi({
@@ -22,9 +23,9 @@ export const apiSlice = createApi({
   tagTypes: ["Workspace", "User"],
 
   endpoints: (builder) => ({
-    getWorkspaces: builder.query<GetWorkspacesResponse, number>({
-      query: (userId) => ({
-        url: `getWorkspaces.php?userId=${userId}`,
+    getWorkspaces: builder.query<GetWorkspacesResponse, void>({
+      query: () => ({
+        url: 'getWorkspaces.php',
         method: "GET",
       }),
       providesTags: ["Workspace"],
@@ -67,7 +68,7 @@ export const apiSlice = createApi({
         body: { workspaceId },
       }),
     }),
-    registerUser: builder.mutation<RegisterUserResponse, RegisterUser>({
+    registerUser: builder.mutation<RegistrationResponse, RegisterUser>({
       query: (user) => {
         const formData = new FormData();
 
@@ -75,9 +76,9 @@ export const apiSlice = createApi({
         formData.append('email', user.email);
         formData.append('password', user.password);
 
-        // if (user.profileImage) {
-        //   formData.append('profileImage', user.profileImage);
-        // }
+        if (user.profileImage) {
+          formData.append('profileImage', user.profileImage);
+        }
 
         return {
           url: 'register.php',
@@ -86,6 +87,14 @@ export const apiSlice = createApi({
         }
       },
       invalidatesTags: ["User"],
+    }),
+    loginUser: builder.mutation<RegistrationResponse, Loginuser>({
+      query: (user) => ({
+        url: 'login.php',
+        method: 'POST',
+        body: user,
+      }),
+      invalidatesTags: ['User'],
     })
   }),
 });
@@ -98,4 +107,5 @@ export const {
   useDeleteWorkspaceMutation,
   useDeleteTaskMutation,
   useRegisterUserMutation,
+  useLoginUserMutation,
 } = apiSlice;

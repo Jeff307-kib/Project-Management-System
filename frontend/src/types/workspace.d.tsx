@@ -8,7 +8,7 @@ export interface Workspace {
 export interface GetWorkspacesResponse {
   success: boolean;
   message: string;
-  data: Workspace[];
+  data: Workspace[] | [];
 }
 
 export interface NewWorkspace {

@@ -1,4 +1,5 @@
 <?php
+require_once '../config/authCheck.php';
 include_once '../models/Workspace.php';
 
 class workspaceController
@@ -12,20 +13,25 @@ class workspaceController
 
     function getWorkspaces()
     {
-        $userId = 1; //Would use SESSION
+        $userId = $_SESSION['userId']; 
         try {
-            if ($this->workspace->fetchWorkspaces($userId)) {
+            $workspaces = $this->workspace->fetchWorkspaces($userId);
+
+            if (empty($workspaces)) {
+                echo json_encode([
+                    'isSuccess' => true,
+                    'message' => "No workspace found for this user",
+                    'data' => [],
+                ]);
+            } else {
                 echo json_encode([
                     'isSuccess' => true,
                     'message' => "Workspaces fetched successfully!",
-                    'data' => $this->workspace->fetchWorkspaces($userId),
+                    'data' => $workspaces,
                 ]);
-            } else {
-                http_response_code(400);
-                echo json_encode(['error' => 'Missing or invalid userId.']);
             }
         } catch (Exception $e) {
-            http_response_code(400);
+            http_response_code(500);
             echo json_encode(['error' => $e->getMessage()]);
         }
     }
@@ -41,7 +47,7 @@ class workspaceController
         }
 
         try {
-            $userId = 1; //Would use SESSION Later :D
+            $userId = $_SESSION['userId']; //Would use SESSION Later :D
             $name = $data['name'];
             $description = empty($data['description']) ? null : $data['description'];
             $description = $data['description'] ?? null;
@@ -60,7 +66,7 @@ class workspaceController
 
     function getWorkspaceById()
     {
-        $userId = 1; //Would use SESSION
+        $userId = $_SESSION['userId']; //Would use SESSION
         if (!isset($_GET['workspaceId'])) {
             http_response_code(400);
             echo json_encode(['error' => 'No worksapce Id found']);
