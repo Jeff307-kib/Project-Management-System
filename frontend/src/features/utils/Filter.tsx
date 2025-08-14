@@ -1,33 +1,33 @@
 import {
-  Menubar,
-  MenubarContent,
-  MenubarItem,
-  MenubarMenu,
-  MenubarSeparator,
-  // MenubarShortcut,
-  MenubarTrigger,
-} from "@/components/ui/menubar";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 import type { FilterProps } from "@/types/utils.d";
+import { Button } from "@/components/ui/button";
 
-const Filter = ({onFilterChange}: FilterProps) => {
+const Filter = ({ onFilterChange }: FilterProps) => {
   return (
-    <Menubar>
-        <MenubarMenu>
-          <MenubarTrigger>Filter</MenubarTrigger>
-          <MenubarContent>
-            <MenubarItem onClick={() => onFilterChange("date")}>
-              Date
-              {/* Date <MenubarShortcut>⌘T</MenubarShortcut> */}
-            </MenubarItem>
-            <MenubarSeparator />
-            <MenubarItem onClick={() => onFilterChange("alphabet")}>Alphabet</MenubarItem>
-            <MenubarSeparator />
-            <MenubarItem>Favourite</MenubarItem> {/* Would handle this later */}
-          </MenubarContent>
-        </MenubarMenu>
-      </Menubar>
-  )
-}
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline">Filter</Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuItem onClick={() => onFilterChange("date")}>
+          Date
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => onFilterChange("alphabet")}>
+          Alphabet
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem>Favourite</DropdownMenuItem> {/* Would handle this later */}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
 
-export default Filter
+export default Filter;

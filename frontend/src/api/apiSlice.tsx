@@ -14,6 +14,7 @@ import type {
   Loginuser,
 } from "@/types/users.d"
 
+
 export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery: fetchBaseQuery({
@@ -95,6 +96,13 @@ export const apiSlice = createApi({
         body: user,
       }),
       invalidatesTags: ['User'],
+    }),
+    logoutUser: builder.mutation<void, void>({
+      query: () => ({
+        url: 'logout.php',
+        method: 'get'
+      }),
+      invalidatesTags: ['User'],
     })
   }),
 });
@@ -108,4 +116,5 @@ export const {
   useDeleteTaskMutation,
   useRegisterUserMutation,
   useLoginUserMutation,
+  useLogoutUserMutation,
 } = apiSlice;

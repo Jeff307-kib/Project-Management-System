@@ -1,8 +1,9 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import Profile from "@/features/utils/Profile";
 import { Bell } from "lucide-react";
 import { useEffect } from "react";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/app/store";
+
 
 const Header = () => {
   const user = useSelector((state: RootState) => state.auth.user);
@@ -44,10 +45,7 @@ const Header = () => {
               <span className="relative inline-flex rounded-full h-3 w-3 bg-destructive"></span>
             </span>
           </div>
-          <Avatar className="h-8 w-8 cursor-pointer">
-            <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-            <AvatarFallback>CN</AvatarFallback>
-          </Avatar>
+          <Profile />
         </div>
       </div>
     </header>

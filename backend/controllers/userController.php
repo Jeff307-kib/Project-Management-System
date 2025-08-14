@@ -1,5 +1,5 @@
 <?php
-require_once '../config/authCheck.php';
+session_start();
 include_once '../models/User.php';
 class UserController
 {
@@ -121,5 +121,12 @@ class UserController
                 echo json_encode(['error' => "An unexpected error occured!"]);
             }
         }
+    }
+
+    function logoutUser () {
+        session_unset();
+        session_destroy();
+        
+        echo json_encode(['success' => true, 'message' => 'Logged out successfully!']);
     }
 }
