@@ -21,8 +21,8 @@ const WorkspaceList = () => {
     return response?.data ?? [];
   }, [response]);
 
-  console.log(workspaces);
-  console.log(response?.data);
+  // console.log(workspaces);
+  // console.log(response?.data);
 
   const filteredWorkspaces = useMemo(() => {
     switch (filterType) {

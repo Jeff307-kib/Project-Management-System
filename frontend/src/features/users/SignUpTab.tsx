@@ -10,52 +10,58 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Eye, EyeOff } from "lucide-react";
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 
-import { useRegisterUserMutation } from "@/api/apiSlice";
+import { useRegisterUserMutation, useCheckSessionQuery } from "@/api/apiSlice";
 import { SuccessToast } from "@/features/utils/SuccessToast";
 import { setCredentials } from "@/features/users/authSlice";
 
 const SignUpTab = () => {
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [profileImage, setProfileImage] = useState<File | null>(null)
+  const [profileImage, setProfileImage] = useState<File | null>(null);
   const [formError, setFormError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
+  const { refetch: refetchSession } = useCheckSessionQuery();
   const [register, { isLoading }] = useRegisterUserMutation();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null
-    setProfileImage(file)
-  }
+    const file = e.target.files?.[0] || null;
+    setProfileImage(file);
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const trimmedName = name.trim()
+    const trimmedName = name.trim();
 
     if (trimmedName.length < 2 || trimmedName.length > 50) {
-      setFormError("Name must be between 2 and 50 characters long.")
-      return
+      setFormError("Name must be between 2 and 50 characters long.");
+      return;
     }
 
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(email)) {
-      setFormError("Please enter a valid email address!")
-      return
+      setFormError("Please enter a valid email address!");
+      return;
     }
 
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!passwordRegex.test(password)) {
-      setFormError("Password must be at least 8 characters and include uppercase, lowercase, a number, and a special character!")
-      return
+      setFormError(
+        "Password must be at least 8 characters and include uppercase, lowercase, a number, and a special character!"
+      );
+      return;
     }
 
     try {
@@ -63,14 +69,15 @@ const SignUpTab = () => {
         name: name,
         email: email,
         password: password,
-        profileImage: profileImage
+        profileImage: profileImage,
       }).unwrap();
 
-      dispatch(setCredentials(result.user))
+      dispatch(setCredentials(result.user));
+      refetchSession();
 
-      SuccessToast("Registration Success!", "Thank you for joining us!")
+      SuccessToast("Registration Success!", "Thank you for joining us!");
       navigate("/workspace");
-      
+
       console.log("Registration Success!", result);
     } catch (err) {
       console.log("Registration Failed", err);
@@ -119,20 +126,35 @@ const SignUpTab = () => {
             </div>
             <div className="grid gap-3">
               <Label htmlFor="profile">Set a Profile Image</Label>
-              <Input type="file" id="profile" onChange={handleFileChange}/>
+              <Input type="file" id="profile" onChange={handleFileChange} />
               <p className="text-muted-foreground text-xs">
                 You can always add this later.
               </p>
             </div>
-            <div className="grid gap-3">
+            <div className="grid gap-3 relative">
               <Label htmlFor="password">Password</Label>
-              <Input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Please set a strong password with 8 or more characters."
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-1/2 -translate-y-1/2 px-3 hover:bg-transparent"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </Button>
+              </div>
             </div>
             <Button type="submit" disabled={isLoading}>
               Sign Up

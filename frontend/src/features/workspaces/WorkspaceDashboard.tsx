@@ -33,12 +33,13 @@ import TasksTap from "@/features/tasks/TasksTap";
 
 import { useGetWorkspaceByIdQuery } from "@/api/apiSlice";
 import { useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const WorkspaceDashboard = () => {
   const { workspaceId } = useParams();
   const workspaceIdNumber = Number(workspaceId);
 
-  console.log(workspaceId);
+  // console.log(workspaceId);
   const { data, isLoading, isError, error, isSuccess } =
     useGetWorkspaceByIdQuery(workspaceIdNumber);
 
@@ -54,7 +55,7 @@ const WorkspaceDashboard = () => {
   };
 
   let workspaceName;
-  const name = data?.data?.name
+  const name = data?.data?.name;
   if (name && name.length > 45) {
     workspaceName = name.substring(0, 45) + "...";
   } else {
@@ -70,9 +71,11 @@ const WorkspaceDashboard = () => {
         <div className=" w-full flex justify-end p-2">
           <Tooltip>
             <TooltipTrigger>
-              <h1 className="text-xl text-center font-semibold mr-4">
-                {workspaceName}
-              </h1>
+              <Link to='/workspace'>
+                <h1 className="text-xl text-center font-semibold mr-4">
+                  {workspaceName}
+                </h1>
+              </Link>
             </TooltipTrigger>
             <TooltipContent>
               <p>{data.data.name}</p>

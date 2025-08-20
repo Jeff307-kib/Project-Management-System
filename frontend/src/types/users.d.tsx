@@ -4,6 +4,11 @@ export interface RegistrationResponse {
     user: User,
 } 
 
+export interface CheckSessionResponse {
+    success: boolean,
+    user: User,
+}
+
 export interface RegisterUser {
     name: string,
     email: string,
@@ -18,7 +23,17 @@ export interface Loginuser {
 
 export interface User {
     id: string,
-    username: string,
+    name: string,
     email: string,
-    profileImage: string,
+    profileImage: string | null ,
+}
+
+
+export interface ForgotPasswordResponse {
+    message: string,
+}
+
+export interface ResetPassword {
+    token: string,
+    password: string,
 }

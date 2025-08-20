@@ -9,12 +9,12 @@ import { useAddWorkspaceMutation, useEditWorkspaceMutation } from "@/api/apiSlic
 import { useState, useEffect } from "react";
 import type { WorkspaceModalProps } from "@/types/workspace.d";
 
-import { SuccessToast } from "../utils/SuccessToast";
+import { SuccessToast } from "@/features/utils/SuccessToast";
 
 
 const WorkspaceModal = ({ label, isOpen, setOpen, workspace }: WorkspaceModalProps) => {
   const isEdit = !!workspace
-  console.log(isEdit)
+  // console.log(isEdit)
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -22,7 +22,7 @@ const WorkspaceModal = ({ label, isOpen, setOpen, workspace }: WorkspaceModalPro
 
   useEffect(() => {
     if (workspace) {
-      console.log("Opening modal with workspace:", workspace);
+      // console.log("Opening modal with workspace:", workspace);
       setName(workspace.name || "")
       setDescription(workspace.description || "")
     } else {
@@ -34,6 +34,7 @@ const WorkspaceModal = ({ label, isOpen, setOpen, workspace }: WorkspaceModalPro
 
   const [addWorkspace, { isLoading: isAdding }] = useAddWorkspaceMutation();
   const [editWorkspace, {isLoading: isEditting }] = useEditWorkspaceMutation();
+  console.log("Workspace Id " + workspace?.id)
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -43,29 +44,31 @@ const WorkspaceModal = ({ label, isOpen, setOpen, workspace }: WorkspaceModalPro
       return;
     }
 
+
     try {
       if (isEdit) {
-        await editWorkspace({
+        const response = await editWorkspace({
           workspaceId: workspace.id,
           name: name.trim(),
-          description: description.trim(),
+          description: description ? description.trim() : null,
         }).unwrap();
+        console.log("Edit: " + response)
         SuccessToast("Workspace Updated", "Your workspace was updated successfully.")
-        console.log("Workspace updated successfully.");
+        // console.log("Workspace updated successfully.");
       } else {
         await addWorkspace({
           name: name.trim(),
-          description: description.trim(),
+          description: description ? description.trim() : null,
         }).unwrap();
         SuccessToast("Workspace Created", "Your workspace was added successfully.")
-        console.log("Workspace added successfully.");
+        // console.log("Workspace added successfully.");
       }
 
       setName("");
       setDescription("");
       setOpen();
     } catch (err) {
-      console.log("Workspace add Failed", err);
+      // console.log("Workspace add Failed", err);
       if (err && typeof err === "object" && "data" in err) {
         const typedErr = err as { data?: { error?: string } };
         setFormError(typedErr.data?.error || "Something went wrong!");

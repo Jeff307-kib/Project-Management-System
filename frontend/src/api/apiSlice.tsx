@@ -10,9 +10,12 @@ import type {
 
 import type {
   RegistrationResponse,
+  CheckSessionResponse,
   RegisterUser,
   Loginuser,
-} from "@/types/users.d"
+  ForgotPasswordResponse,
+  ResetPassword,
+} from "@/types/users.d";
 
 
 export const apiSlice = createApi({
@@ -26,7 +29,7 @@ export const apiSlice = createApi({
   endpoints: (builder) => ({
     getWorkspaces: builder.query<GetWorkspacesResponse, void>({
       query: () => ({
-        url: 'getWorkspaces.php',
+        url: "getWorkspaces.php",
         method: "GET",
       }),
       providesTags: ["Workspace"],
@@ -73,36 +76,61 @@ export const apiSlice = createApi({
       query: (user) => {
         const formData = new FormData();
 
-        formData.append('name', user.name);
-        formData.append('email', user.email);
-        formData.append('password', user.password);
+        formData.append("name", user.name);
+        formData.append("email", user.email);
+        formData.append("password", user.password);
 
         if (user.profileImage) {
-          formData.append('profileImage', user.profileImage);
+          formData.append("profileImage", user.profileImage);
         }
 
         return {
-          url: 'register.php',
-          method: 'POST',
-          body: formData
-        }
+          url: "register.php",
+          method: "POST",
+          body: formData,
+        };
       },
       invalidatesTags: ["User"],
     }),
     loginUser: builder.mutation<RegistrationResponse, Loginuser>({
       query: (user) => ({
-        url: 'login.php',
-        method: 'POST',
+        url: "login.php",
+        method: "POST",
         body: user,
       }),
-      invalidatesTags: ['User'],
+      invalidatesTags: ["User"],
+    }),
+    checkSession: builder.query<CheckSessionResponse, void>({
+      query: () => "checkSession.php",
+      providesTags: ["User"],
     }),
     logoutUser: builder.mutation<void, void>({
       query: () => ({
-        url: 'logout.php',
-        method: 'get'
+        url: "logout.php",
+        method: "GET",
       }),
-      invalidatesTags: ['User'],
+      invalidatesTags: ["User"],
+    }),
+    updateProfile: builder.mutation<RegistrationResponse, FormData>({
+      query: (formData) => ({
+        url: "editProfile.php",
+        method: "POST",
+        body: formData
+      }),
+    }),
+    forgotPassword: builder.mutation<ForgotPasswordResponse, string>({
+      query: (email) => ({
+        url: 'forgotPassword.php',
+        method: "POST",
+        body: {email},
+      })
+    }),
+    resetPassword: builder.mutation<ForgotPasswordResponse, ResetPassword>({
+      query: (credentials) => ({
+        url: 'resetPassword.php',
+        method: 'POST',
+        body: credentials,
+      })
     })
   }),
 });
@@ -116,5 +144,9 @@ export const {
   useDeleteTaskMutation,
   useRegisterUserMutation,
   useLoginUserMutation,
+  useCheckSessionQuery,
   useLogoutUserMutation,
+  useUpdateProfileMutation,
+  useForgotPasswordMutation,
+  useResetPasswordMutation,
 } = apiSlice;

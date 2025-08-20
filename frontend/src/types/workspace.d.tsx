@@ -30,7 +30,7 @@ export interface WorkspaceModalProps {
 
 export interface EditWorkspace {
     name: string,
-    description: string,
+    description: string | null,
     workspaceId: number,
 }
 
