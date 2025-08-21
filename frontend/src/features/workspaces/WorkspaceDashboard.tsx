@@ -30,6 +30,7 @@ import EditButton from "@/features/utils/EditButton";
 import WorkspaceModal from "@/features/workspaces/WorkspaceModal";
 import DeleteButton from "@/features/utils/DeleteButton";
 import TasksTap from "@/features/tasks/TasksTap";
+import MembersTab from "@/features/users/MembersTab";
 
 import { useGetWorkspaceByIdQuery } from "@/api/apiSlice";
 import { useParams } from "react-router-dom";
@@ -107,30 +108,7 @@ const WorkspaceDashboard = () => {
           </Popover>
         </div>
         <TasksTap />
-        <TabsContent value="members">
-          <Card className="border-0 rounded-none shadow-none">
-            <CardHeader>
-              <CardTitle>Members</CardTitle>
-              <CardDescription>
-                Change your password here. After saving, you&apos;ll be logged
-                out.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-6">
-              <div className="grid gap-3">
-                <Label htmlFor="tabs-demo-current">Current password</Label>
-                <Input id="tabs-demo-current" type="password" />
-              </div>
-              <div className="grid gap-3">
-                <Label htmlFor="tabs-demo-new">New password</Label>
-                <Input id="tabs-demo-new" type="password" />
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button>Save password</Button>
-            </CardFooter>
-          </Card>
-        </TabsContent>
+        <MembersTab />
         <TabsContent value="report">
           <Card className="border-0 rounded-none shadow-none">
             <CardHeader>

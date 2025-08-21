@@ -1,14 +1,17 @@
 <?php
 require_once '../config/authCheck.php';
 include_once '../models/Workspace.php';
+include_once '../models/User.php';
 
 class workspaceController
 {
     private $workspace;
+    private $user;
 
     function __construct()
     {
         $this->workspace = new Workspace();
+        $this->user = new User();
     }
 
     function getWorkspaces()
@@ -156,6 +159,47 @@ class workspaceController
         } catch (Exception $e) {
             http_response_code(400);
             echo json_encode(['error' => $e->getMessage()]);
+        }
+    }
+
+    function inviteMember() {
+        $data = json_decode(file_get_contents("php://input", true));
+
+        try {
+            if (empty($data['email'])) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Please enter email address!']);
+                return;
+            }
+
+            if (!isset($data['workspace_id'])) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Missing Workspace Id.']);
+                return;
+            }
+            $email = trim($data['email']);
+            $workspaceId = $data['workspaceId'];
+
+            $invitee = $this->user->fetchUserByEmail($email);
+            if (!$invitee) {
+                http_response_code(404);
+                echo json_encode(['error' => 'User with that email not found!']);
+                return;
+            }
+
+            $inviteeId = $invitee['id'];
+            $inviterId = $_SESSION['userId'];
+
+            if (!$this->workspace->isNotMember($workspaceId, $inviteeId)) {
+                http_response_code(409);
+                echo json_encode(['error' => 'User is already a member of this workspace.']);
+                return;
+            }
+
+            //Create Notification
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'An unexpected error occured: ' . $e->getMessage()]);
         }
     }
 }

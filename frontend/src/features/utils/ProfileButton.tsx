@@ -30,7 +30,7 @@ const ProfileButton = () => {
                 alt={user.name}
               />
               <AvatarFallback>
-                {user.name.slice(0, 2).toUpperCase()}
+                {user?.name?.slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>

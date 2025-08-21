@@ -8,7 +8,7 @@ include_once '../phpmailer/Exception.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
-use PHPMailer\PHPMailer\Exception;
+use PHPMailer\PHPMailer\Exception as PHPMailerException;
 
 class UserController
 {
@@ -99,7 +99,7 @@ class UserController
         try {
             $data = json_decode(file_get_contents("php://input"), true);
 
-            if (empty($data['credential'] || empty($data['password']))) {
+            if (empty($data['credential']) || empty($data['password'])) {
                 http_response_code(400);
                 echo json_encode(['error' => 'Please enter all fields!']);
                 return;
@@ -124,7 +124,7 @@ class UserController
         } catch (Exception $e) {
             if ($e->getMessage() === "Incorrect email, username or password.") {
                 http_response_code(409);
-                echo json_encode(['error' => $e->getMessage()]);
+                echo json_encode(['error' => 'Incorrect email, username or password.']);
             } else {
                 http_response_code(500); // Database query failed 
                 echo json_encode(['error' => "An unexpected error occured!"]);
@@ -306,7 +306,7 @@ class UserController
                         $mail->AltBody = "Password reset link: $resetLink (valid for 1 hour)";
 
                         $mail->send();
-                    } catch (Exception $e) {
+                    } catch (PHPMailerException $e) {
                         http_response_code(500);
                         $response = [
                             'status' => 'error',
