@@ -10,11 +10,16 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+
 import { Trash2 } from "lucide-react";
+
 import type { DeleteButtonProps } from "@/types/utils.d";
 import { useDeleteWorkspaceMutation } from "@/api/apiSlice";
 import { useDeleteTaskMutation } from "@/api/apiSlice";
 import { useNavigate } from "react-router-dom";
+
+import { ErrorToast } from "@/features/utils/ErrorToast";
+import { SuccessToast } from "@/features/utils/SuccessToast";
 
 const DeleteButton = ({ label, id }: DeleteButtonProps) => {
   const navigate = useNavigate();
@@ -26,9 +31,11 @@ const DeleteButton = ({ label, id }: DeleteButtonProps) => {
       try {
         const result = await deleteWorksapce(id).unwrap();
         if (result.success) {
+          SuccessToast("Workspace Deleted!", "Workspace Deleted Successfully!")
           navigate("/workspace");
         }
       } catch (err) {
+        ErrorToast("Failed to Delete Workpace!")
         console.error("Failed to delete workspace:", err);
       }
     } else if (label === "Task") {

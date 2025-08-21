@@ -1,5 +1,6 @@
-// import { AppWindowIcon, CodeIcon } from "lucide-react";
 import { useState } from "react";
+import { MoreVertical } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,24 +15,31 @@ import {
   PopoverTrigger,
   PopoverContent,
 } from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import AddButton from "../utils/AddButton";
-import SearchBox from "../utils/SearchBox";
-import EditButton from "./EditButton";
+
+import AddButton from "@/features/utils/AddButton";
+import SearchBox from "@/features/utils/SearchBox";
+import EditButton from "@/features/utils/EditButton";
 import WorkspaceModal from "@/features/workspaces/WorkspaceModal";
+import DeleteButton from "@/features/utils/DeleteButton";
+import TasksTap from "@/features/tasks/TasksTap";
+
 import { useGetWorkspaceByIdQuery } from "@/api/apiSlice";
 import { useParams } from "react-router-dom";
-import TasksTap from "../tasks/TasksTap";
-import { MoreVertical } from "lucide-react";
-import DeleteButton from "@/features/utils/DeleteButton";
+import { Link } from "react-router-dom";
 
 const WorkspaceDashboard = () => {
   const { workspaceId } = useParams();
   const workspaceIdNumber = Number(workspaceId);
 
-  console.log(workspaceId);
+  // console.log(workspaceId);
   const { data, isLoading, isError, error, isSuccess } =
     useGetWorkspaceByIdQuery(workspaceIdNumber);
 
@@ -47,11 +55,13 @@ const WorkspaceDashboard = () => {
   };
 
   let workspaceName;
-  if (data?.data.name) {
-    workspaceName = data?.data.name.substring(0, 45) + "...";
+  const name = data?.data?.name;
+  if (name && name.length > 45) {
+    workspaceName = name.substring(0, 45) + "...";
   } else {
-    workspaceName = data?.data.name;
+    workspaceName = name;
   }
+
   let content;
   if (isLoading) {
     content = <p>Loading...</p>;
@@ -59,12 +69,18 @@ const WorkspaceDashboard = () => {
     content = (
       <Tabs defaultValue="tasks">
         <div className=" w-full flex justify-end p-2">
-          <h1 className="text-2xl text-center font-semibold mr-4">
-            {workspaceName}
-          </h1>
-          {/* <EditButton onClick={handleAdd} />
-          <AddButton label="Task" onClick={handle}/> */}
-
+          <Tooltip>
+            <TooltipTrigger>
+              <Link to='/workspace'>
+                <h1 className="text-xl text-center font-semibold mr-4">
+                  {workspaceName}
+                </h1>
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{data.data.name}</p>
+            </TooltipContent>
+          </Tooltip>
           <WorkspaceModal
             isOpen={isOpen}
             setOpen={setOpen}
@@ -85,15 +101,8 @@ const WorkspaceDashboard = () => {
             </PopoverTrigger>
             <PopoverContent className="w-48 p-2 flex flex-col gap-2">
               <AddButton label="Task" onClick={handleAdd} />
-              <EditButton onClick={handleAdd} />
-              {/* <Button
-                variant="ghost"
-                className="justify-start gap-2 text-destructive"
-              >
-                <Trash2 className="w-4 h-4" />
-                Delete Workspace
-              </Button> */}
-              <DeleteButton label="Workspace" id={workspaceIdNumber}/>
+              <EditButton label="Workspace" onClick={handleAdd} />
+              <DeleteButton label="Workspace" id={workspaceIdNumber} />
             </PopoverContent>
           </Popover>
         </div>

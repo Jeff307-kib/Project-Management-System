@@ -1,6 +1,12 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Progress } from "@/components/ui/progress";
 import { GripVertical } from "lucide-react";
+
 import type { Workspace } from "@/types/workspace.d";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
@@ -36,12 +42,22 @@ const WorkspaceExcerpt = ({ workspace }: Props) => {
   };
 
   return (
-    <div className="group flex flex-col justify-between rounded-lg border bg-card text-card-foreground shadow-sm transition-shadow hover:shadow-md w-72" onClick={clickWorkspace}>
+    <div
+      className="group flex flex-col justify-between rounded-lg border bg-card text-card-foreground shadow-sm transition-shadow hover:shadow-md w-72 cursor-pointer"
+      onClick={clickWorkspace}
+    >
       <div className="flex items-start justify-between p-4">
         <div className="space-y-1.5">
-          <h3 className="text-lg font-semibold leading-6 tracking-tight ">
-            {workspaceName}
-          </h3>
+          <Tooltip>
+            <TooltipTrigger>
+              <h3 className="text-lg font-semibold leading-6 tracking-tight ">
+                {workspaceName}
+              </h3>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{workspace.name}</p>
+            </TooltipContent>
+          </Tooltip>
           <p className="text-sm text-muted-foreground">{description}</p>
         </div>
         <button className="text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100">

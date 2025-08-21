@@ -49,7 +49,28 @@
             return false;
         }
 
-        public function fetchWorkspaceById($workspaceId, $userId) {
+        public function checkDuplicate($name, $userId, $excludeId = null)
+        {
+            $this->conn = Connection::connect();
+            $sql = "SELECT id FROM workspaces WHERE created_by = :ui AND name = :na";
+
+            $params = [
+                ":ui" => $userId, 
+                ":na" => $name, 
+            ];
+
+            if ($excludeId !== null) {
+                $sql .= " AND id != :ei";
+                $params[':ei'] = $excludeId;
+            }
+
+            $this->stmt = $this->conn->prepare($sql);
+            $this->stmt->execute($params);
+            return $this->stmt->rowCount() > 0;
+        }
+
+        public function fetchWorkspaceById($workspaceId, $userId)
+        {
             $this->conn = Connection::connect();
             $sql = "
                 SELECT w.id, w.name, w.created_at, w.description,
@@ -69,7 +90,8 @@
             return false;
         }
 
-        public function updateWorkspace($name, $description, $workspaceId) {
+        public function updateWorkspace($name, $description, $workspaceId)
+        {
             $this->conn = Connection::connect();
             $sql = "
                 UPDATE workspaces
@@ -88,7 +110,8 @@
             return false;
         }
 
-        public function dropWorkspace($workspaceId) {
+        public function dropWorkspace($workspaceId)
+        {
             $this->conn = Connection::connect();
             $sql = "DELETE FROM workspaces WHERE id = :wid";
             $this->stmt = $this->conn->prepare($sql);

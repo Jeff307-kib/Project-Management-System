@@ -1,7 +1,21 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import ProfileButton from "@/features/utils/ProfileButton";
 import { Bell } from "lucide-react";
+import { useEffect } from "react";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/app/store";
+
 
 const Header = () => {
+  const user = useSelector((state: RootState) => state.auth.user);
+  const login = useSelector((state: RootState) => state.auth.isLoggedIn);
+  useEffect(() => {
+    if (user) {
+      console.log("Logged in user state:", user);
+      console.log("Logged in user isLoggedIn state:", login);
+    } else {
+      console.log("No user is currently logged in.");
+    }
+  }, [user, login]);
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4">
       <div className="container flex h-14 max-w-screen-2xl items-center">
@@ -33,10 +47,7 @@ const Header = () => {
               <span className="relative inline-flex rounded-full h-3 w-3 bg-destructive"></span>
             </span>
           </div>
-          <Avatar className="h-8 w-8 cursor-pointer">
-            <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-            <AvatarFallback>CN</AvatarFallback>
-          </Avatar>
+          <ProfileButton />
         </div>
       </div>
     </header>

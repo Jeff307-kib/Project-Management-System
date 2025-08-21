@@ -8,7 +8,7 @@ export interface Workspace {
 export interface GetWorkspacesResponse {
   success: boolean;
   message: string;
-  data: Workspace[];
+  data: Workspace[] | [];
 }
 
 export interface NewWorkspace {
@@ -30,7 +30,7 @@ export interface WorkspaceModalProps {
 
 export interface EditWorkspace {
     name: string,
-    description: string,
+    description: string | null,
     workspaceId: number,
 }
 

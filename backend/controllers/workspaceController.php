@@ -1,4 +1,5 @@
 <?php
+require_once '../config/authCheck.php';
 include_once '../models/Workspace.php';
 
 class workspaceController
@@ -12,20 +13,25 @@ class workspaceController
 
     function getWorkspaces()
     {
-        $userId = 1; //Would use SESSION
+        $userId = $_SESSION['userId'];
         try {
-            if ($this->workspace->fetchWorkspaces($userId)) {
+            $workspaces = $this->workspace->fetchWorkspaces($userId);
+
+            if (empty($workspaces)) {
+                echo json_encode([
+                    'isSuccess' => true,
+                    'message' => "No workspace found for this user",
+                    'data' => [],
+                ]);
+            } else {
                 echo json_encode([
                     'isSuccess' => true,
                     'message' => "Workspaces fetched successfully!",
-                    'data' => $this->workspace->fetchWorkspaces($userId),
+                    'data' => $workspaces,
                 ]);
-            } else {
-                http_response_code(400);
-                echo json_encode(['error' => 'Missing or invalid userId.']);
             }
         } catch (Exception $e) {
-            http_response_code(400);
+            http_response_code(500);
             echo json_encode(['error' => $e->getMessage()]);
         }
     }
@@ -41,10 +47,16 @@ class workspaceController
         }
 
         try {
-            $userId = 1; //Would use SESSION Later :D
+            $userId = $_SESSION['userId']; //Would use SESSION Later :D
             $name = $data['name'];
             $description = empty($data['description']) ? null : $data['description'];
             $description = $data['description'] ?? null;
+
+            if ($this->workspace->checkDuplicate($name, $userId)) {
+                http_response_code(409);
+                echo json_encode(['error' => "A workspace with this name already exists!"]);
+                return;
+            }
 
             if ($this->workspace->insertWorkspace($userId, $name, $description)) {
                 echo json_encode([
@@ -60,7 +72,7 @@ class workspaceController
 
     function getWorkspaceById()
     {
-        $userId = 1; //Would use SESSION
+        $userId = $_SESSION['userId']; //Would use SESSION
         if (!isset($_GET['workspaceId'])) {
             http_response_code(400);
             echo json_encode(['error' => 'No worksapce Id found']);
@@ -88,15 +100,22 @@ class workspaceController
     {
         $data = json_decode(file_get_contents("php://input"), true);
 
-        if (empty($data['name']) && empty($data['description'] && empty($data['workspaceId']))) {
+        if (empty($data['name']) || empty($data['workspaceId'])) {
             http_response_code(400);
             echo json_encode(['error' => 'Missing name or description or workspaceId']);
+            return;
         }
 
+        $name = trim($data['name']);
+        $description = isset($data['description']) ? trim($data['description']) : null;
+        $workspaceId = $data['workspaceId'];
+        $userId = $_SESSION['userId'];
         try {
-            $name = $data['name'];
-            $description = $data['description'];
-            $workspaceId = $data['workspaceId'];
+            if ($this->workspace->checkDuplicate($name, $userId, $workspaceId)) {
+                http_response_code(409);
+                echo json_encode(['error' => "A workspace with this name already exists!"]);
+                return;
+            }
 
             if ($this->workspace->updateWorkspace($name, $description, $workspaceId)) {
                 echo json_encode([
@@ -108,14 +127,15 @@ class workspaceController
                 echo json_encode(['error' => 'Failed to update workspace']);
             }
         } catch (Exception $e) {
-            http_response_code(400);
-            echo json_encode(['error' => $e->getMessage()]);
+            http_response_code(500);
+            echo json_encode(['error' => "An unexpected error occured: " . $e->getMessage()]);
         }
     }
 
-    function deleteWorkspace() {
+    function deleteWorkspace()
+    {
         $data = json_decode(file_get_contents("php://input"), true);
-        
+
         if (empty($data['workspaceId'])) {
             http_response_code(400);
             echo json_encode(['error' => 'No worksapce Id found']);
