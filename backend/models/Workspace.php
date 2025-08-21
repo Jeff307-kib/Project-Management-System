@@ -1,0 +1,126 @@
+    <?php
+    include_once '../config/db.php';
+
+    class Workspace
+    {
+        private $conn, $stmt;
+
+        public function fetchWorkspaces($userId)
+        {
+            $this->conn = Connection::connect();
+            $sql = "
+                    SELECT w.id, w.name, w.created_at, w.description
+                    FROM workspaces w
+                    JOIN user_workspace uw ON w.id = uw.workspace_id
+                    WHERE uw.user_id = ?
+            ";
+            $this->stmt = $this->conn->prepare($sql);
+
+            if ($this->stmt->execute([$userId])) {
+                return $this->stmt->fetchAll(PDO::FETCH_ASSOC);
+            }
+
+            return [];
+        }
+
+        public function insertWorkspace($userId, $name, $description)
+        {
+            $this->conn = Connection::connect();
+            $sql = "
+                    INSERT INTO Workspaces (name, created_by, created_at, updated_at, description) VALUES (:na, :cb, NOW(), NOW(), :de)
+            ";
+            $this->stmt = $this->conn->prepare($sql);
+            $this->stmt->bindParam(":na", $name);
+            $this->stmt->bindParam(":cb", $userId);
+            $this->stmt->bindParam(":de", $description);
+
+            if ($this->stmt->execute()) {
+                $workspaceId = $this->conn->lastInsertId();
+
+                $sqlPivot = "INSERT INTO user_workspace (user_id, workspace_id, role, joined_at) VALUES (:uid, :wid, 'admin', NOW())";
+                $stmtPivot = $this->conn->prepare($sqlPivot);
+                $stmtPivot->bindParam(":uid", $userId);
+                $stmtPivot->bindParam(":wid", $workspaceId);
+                $stmtPivot->execute();
+
+                return true;
+            }
+
+            return false;
+        }
+
+        public function checkDuplicate($name, $userId, $excludeId = null)
+        {
+            $this->conn = Connection::connect();
+            $sql = "SELECT id FROM workspaces WHERE created_by = :ui AND name = :na";
+
+            $params = [
+                ":ui" => $userId, 
+                ":na" => $name, 
+            ];
+
+            if ($excludeId !== null) {
+                $sql .= " AND id != :ei";
+                $params[':ei'] = $excludeId;
+            }
+
+            $this->stmt = $this->conn->prepare($sql);
+            $this->stmt->execute($params);
+            return $this->stmt->rowCount() > 0;
+        }
+
+        public function fetchWorkspaceById($workspaceId, $userId)
+        {
+            $this->conn = Connection::connect();
+            $sql = "
+                SELECT w.id, w.name, w.created_at, w.description,
+                uw.role, uw.joined_at
+                FROM workspaces w
+                JOIN user_workspace uw ON w.id = uw.workspace_id
+                WHERE w.id = :wid AND uw.user_id = :uid
+            ";
+            $this->stmt = $this->conn->prepare($sql);
+            $this->stmt->bindParam(':wid', $workspaceId);
+            $this->stmt->bindParam(':uid', $userId);
+
+            if ($this->stmt->execute()) {
+                return $this->stmt->fetch(PDO::FETCH_ASSOC);
+            }
+
+            return false;
+        }
+
+        public function updateWorkspace($name, $description, $workspaceId)
+        {
+            $this->conn = Connection::connect();
+            $sql = "
+                UPDATE workspaces
+                SET name = :na, description = :de, updated_at = NOW()
+                WHERE id = :wid
+            ";
+            $this->stmt = $this->conn->prepare($sql);
+            $this->stmt->bindParam(":na", $name);
+            $this->stmt->bindParam(":de", $description);
+            $this->stmt->bindParam(":wid", $workspaceId);
+
+            if ($this->stmt->execute()) {
+                return true;
+            }
+
+            return false;
+        }
+
+        public function dropWorkspace($workspaceId)
+        {
+            $this->conn = Connection::connect();
+            $sql = "DELETE FROM workspaces WHERE id = :wid";
+            $this->stmt = $this->conn->prepare($sql);
+            $this->stmt->bindParam(":wid", $workspaceId);
+
+            if ($this->stmt->execute()) {
+                return true;
+            }
+
+            return false;
+        }
+    }
