@@ -47,3 +47,21 @@ export interface GetWorkspaceByIdResponse {
   message: string;
   data: WorkspaceById
 }
+
+export interface Invitation {
+  email: string,
+  workspaceId: string,
+}
+
+export interface Notification {
+  type: string,
+  status: string,
+  message: string,
+  created_at: string,
+}
+
+export interface getNotificationResponse {
+  success: boolean,
+  message: string,
+  notifications: Notification[] | [],
+}

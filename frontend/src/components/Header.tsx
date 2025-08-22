@@ -1,9 +1,10 @@
 import ProfileButton from "@/features/utils/ProfileButton";
+import Notifications from "@/features/utils/Notifications";
 import { Bell } from "lucide-react";
 import { useEffect } from "react";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/app/store";
-
+import { Popover, PopoverTrigger } from "@radix-ui/react-popover";
 
 const Header = () => {
   const user = useSelector((state: RootState) => state.auth.user);
@@ -41,7 +42,12 @@ const Header = () => {
 
         <div className="flex flex-1 items-center justify-end space-x-4">
           <div className="relative">
-            <Bell className="h-5 w-5 text-muted-foreground transition-colors hover:text-foreground cursor-pointer" />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Bell className="h-5 w-5 text-muted-foreground transition-colors hover:text-foreground cursor-pointer" />
+              </PopoverTrigger>
+              <Notifications />
+            </Popover>
             <span className="absolute -top-1 -right-1 flex h-3 w-3">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
               <span className="relative inline-flex rounded-full h-3 w-3 bg-destructive"></span>

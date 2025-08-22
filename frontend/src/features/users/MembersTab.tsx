@@ -7,9 +7,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { TabsContent } from "@/components/ui/tabs";
-// import { Input } from "@/components/ui/input";
-// import { Label } from "@/components/ui/label";
-// import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
 import AddButton from "@/features/utils/AddButton";
@@ -31,7 +28,7 @@ const MembersTab = () => {
             Members of workspace!
           </CardDescription>
           <div className="absolute top-0 right-5">
-            <AddButton label="Invite Member" onClick={handleOpen} />
+            <AddButton label="Member" onClick={handleOpen} />
           </div>
         </CardHeader>
         <CardContent className="grid gap-6">

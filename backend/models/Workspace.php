@@ -55,8 +55,8 @@
             $sql = "SELECT id FROM workspaces WHERE created_by = :ui AND name = :na";
 
             $params = [
-                ":ui" => $userId, 
-                ":na" => $name, 
+                ":ui" => $userId,
+                ":na" => $name,
             ];
 
             if ($excludeId !== null) {
@@ -124,7 +124,8 @@
             return false;
         }
 
-        public function isNotMember($workspaceId ,$inviteeId) {
+        public function isNotMember($workspaceId, $inviteeId)
+        {
             $this->conn = Connection::connect();
 
             $sql = "SELECT * FROM user_workspace WHERE user_id = :ui AND workspace_id = :wi";
@@ -132,7 +133,7 @@
             $this->stmt->bindParam(":ui", $inviteeId);
             $this->stmt->bindParam(":wi", $workspaceId);
             $this->stmt->execute();
-            
+
             if (!$this->stmt->rowCount() > 0) {
                 return true;
             }

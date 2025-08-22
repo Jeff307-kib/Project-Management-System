@@ -6,6 +6,8 @@ import type {
   NewWorkspace,
   EditWorkspace,
   GetWorkspaceByIdResponse,
+  Invitation,
+  getNotificationResponse,
 } from "@/types/workspace.d";
 
 import type {
@@ -24,7 +26,7 @@ export const apiSlice = createApi({
     baseUrl: "http://localhost/projectManagementSystem/backend/public/",
     credentials: "include",
   }),
-  tagTypes: ["Workspace", "User"],
+  tagTypes: ["Workspace", "User", "Notification"],
 
   endpoints: (builder) => ({
     getWorkspaces: builder.query<GetWorkspacesResponse, void>({
@@ -131,6 +133,21 @@ export const apiSlice = createApi({
         method: 'POST',
         body: credentials,
       })
+    }),
+    sendInvitation: builder.mutation<WorkspaceMutationResponse, Invitation>({
+      query: (invitation) => ({
+        url: 'sendInvitation.php',
+        method: 'POST',
+        body: invitation,
+      }),
+      invalidatesTags: ["Notification"],
+    }),
+    getNotifications: builder.query<getNotificationResponse, void>({
+      query: () => ({
+        url: 'getNotifications.php',
+        method: 'GET',
+      }),
+      providesTags: ["Notification"],
     })
   }),
 });
@@ -149,4 +166,6 @@ export const {
   useUpdateProfileMutation,
   useForgotPasswordMutation,
   useResetPasswordMutation,
+  useSendInvitationMutation,
+  useGetNotificationsQuery,
 } = apiSlice;

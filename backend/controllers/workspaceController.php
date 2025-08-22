@@ -2,16 +2,19 @@
 require_once '../config/authCheck.php';
 include_once '../models/Workspace.php';
 include_once '../models/User.php';
+include_once '../models/Notification.php';
 
 class workspaceController
 {
     private $workspace;
     private $user;
+    private $noti;
 
     function __construct()
     {
         $this->workspace = new Workspace();
         $this->user = new User();
+        $this->noti = new Notification();
     }
 
     function getWorkspaces()
@@ -163,16 +166,15 @@ class workspaceController
     }
 
     function inviteMember() {
-        $data = json_decode(file_get_contents("php://input", true));
-
+        $data = json_decode(file_get_contents("php://input"), true);
         try {
-            if (empty($data['email'])) {
+            if (!isset($data['email'])) {
                 http_response_code(400);
                 echo json_encode(['error' => 'Please enter email address!']);
                 return;
             }
 
-            if (!isset($data['workspace_id'])) {
+            if (!isset($data['workspaceId'])) {
                 http_response_code(400);
                 echo json_encode(['error' => 'Missing Workspace Id.']);
                 return;
@@ -196,7 +198,20 @@ class workspaceController
                 return;
             }
 
-            //Create Notification
+            $this->noti->createNotification([
+                'recipient_id' =>$inviteeId,
+                'sender_id' => $inviterId,
+                'type' => 'Invitation',
+                'related_id' => $workspaceId,
+                'status' => 'Pending',
+                'message' => 'You have been invited to a new workspace!',
+            ]);
+
+            echo json_encode([
+                'success' => true,
+                'message' => 'Invitation sent successfully!',
+            ]);
+
         } catch (Exception $e) {
             http_response_code(500);
             echo json_encode(['error' => 'An unexpected error occured: ' . $e->getMessage()]);
