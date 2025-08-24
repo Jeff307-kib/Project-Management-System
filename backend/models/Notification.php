@@ -26,13 +26,75 @@ class Notification {
     public function fetchNotification($userId) {
         $this->conn = Connection::connect();
 
-        $sql = "SELECT type, status, message, created_at FROM notifications WHERE recipient_id = :ri";
+        $sql = "SELECT id, type, status, message, created_at FROM notifications WHERE recipient_id = :ri";
         $this->stmt = $this->conn->prepare($sql);
         $this->stmt->bindParam(":ri", $userId);
 
         if ($this->stmt->execute()) {
             return $this->stmt->fetchAll(PDO::FETCH_ASSOC);
         }
+        return [];
+    }
+
+    public function fetchNotificationById($notificationId) {
+        $this->conn = COnnection::connect();
+
+        $sql = "SELECT * FROM notifications WHERE id = :ni";
+        $this->stmt = $this->conn->prepare($sql);
+        $this->stmt->bindParam(":ni", $notificationId);
+
+        if ($this->stmt->execute()) {
+            return $this->stmt->fetch(PDO::FETCH_ASSOC);
+        }
+
+        return false;
+    }
+
+    public function updateNotificationStatus($notificationId, $status) {
+        $this->conn = Connection::connect();
+
+        $sql = "UPDATE notifications SET status = :st WHERE id = :ni";
+        $this->stmt = $this->conn->prepare($sql);
+        $this->stmt->bindParam(":st", $status);
+        $this->stmt->bindParam(":ni", $notificationId);
+
+        if ($this->stmt->execute()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function sendReply($recipientId, $senderId, $type, $relatedId, $status, $message) {
+        $this->conn = Connection::connect();
+
+        $sql = "INSERT INTO notifications (recipient_id, sender_id, type, related_id, status, message, created_at) VALUES (:ri, :si, :ty, :re, :st, :me, NOW())";
+        $this->stmt = $this->conn->prepare($sql);
+        $this->stmt->bindParam(":ri", $recipientId);
+        $this->stmt->bindParam(":si", $senderId);
+        $this->stmt->bindParam(":ty", $type);
+        $this->stmt->bindParam(":re", $relatedId);
+        $this->stmt->bindParam(":st", $status);
+        $this->stmt->bindParam(":me", $message);
+
+        if ($this->stmt->execute()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function dropNotification($notificationId) {
+        $this->conn = Connection::connect();
+
+        $sql = "DELETE FROM notifications WHERE id = :ni";
+        $this->stmt = $this->conn->prepare($sql);
+        $this->stmt->bindParam(":ni", $notificationId);
+
+        if ($this->stmt->execute()) {
+            return true;
+        }
+
         return false;
     }
 }

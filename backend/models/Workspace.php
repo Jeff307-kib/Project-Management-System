@@ -113,15 +113,27 @@
         public function dropWorkspace($workspaceId)
         {
             $this->conn = Connection::connect();
-            $sql = "DELETE FROM workspaces WHERE id = :wid";
-            $this->stmt = $this->conn->prepare($sql);
-            $this->stmt->bindParam(":wid", $workspaceId);
 
-            if ($this->stmt->execute()) {
+            try {
+                $this->conn->beginTransaction();
+
+                $sql = "DELETE FROM user_workspace WHERE workspace_id = :wid";
+                $this->stmt = $this->conn->prepare($sql);
+                $this->stmt->bindParam(":wid", $workspaceId);
+                $this->stmt->execute();
+
+                $sql2 = "DELETE FROM workspaces WHERE id = :wid";
+                $stmt2 = $this->conn->prepare($sql2);
+                $stmt2->bindParam(":wid", $workspaceId);
+                $stmt2->execute();
+
+                $this->conn->commit();
                 return true;
-            }
 
-            return false;
+            } catch (Exception $e) {
+                $this->conn->rollBack();
+                return false;
+            }
         }
 
         public function isNotMember($workspaceId, $inviteeId)
@@ -139,5 +151,21 @@
             }
 
             return false;
+        }
+
+        public function insertMember($userId, $workspaceId) {
+            $this->conn = Connection::connect();
+
+            $sql = "INSERT INTO user_workspace (user_id, workspace_id, role, joined_at) VALUES (:ui, :wi, 'member', NOW())";
+            $this->stmt = $this->conn->prepare($sql);
+            $this->stmt->bindParam(":ui", $userId);
+            $this->stmt->bindParam(":wi", $workspaceId);
+
+            if ($this->stmt->execute()) {
+                return true;
+            }
+
+            return false;
+            
         }
     }

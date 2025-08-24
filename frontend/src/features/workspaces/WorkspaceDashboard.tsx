@@ -35,8 +35,10 @@ import MembersTab from "@/features/users/MembersTab";
 import { useGetWorkspaceByIdQuery } from "@/api/apiSlice";
 import { useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const WorkspaceDashboard = () => {
+  const navigate = useNavigate();
   const { workspaceId } = useParams();
   const workspaceIdNumber = Number(workspaceId);
 
@@ -137,6 +139,9 @@ const WorkspaceDashboard = () => {
     );
   } else if (isError) {
     if ("status" in error) {
+      if (error.status == 'CUSTOM_ERROR') {
+        navigate('/registration')
+      }
       content = <p>Error: {error.status}</p>;
     } else {
       content = <p>An unexpected error occurred.</p>;

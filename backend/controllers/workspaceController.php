@@ -191,6 +191,8 @@ class workspaceController
 
             $inviteeId = $invitee['id'];
             $inviterId = $_SESSION['userId'];
+            $inviter = $this->user->fetchUserById($inviterId);
+            $workspace = $this->workspace->fetchWorkspaceById($workspaceId, $inviterId);
 
             if (!$this->workspace->isNotMember($workspaceId, $inviteeId)) {
                 http_response_code(409);
@@ -204,7 +206,7 @@ class workspaceController
                 'type' => 'Invitation',
                 'related_id' => $workspaceId,
                 'status' => 'Pending',
-                'message' => 'You have been invited to a new workspace!',
+                'message' => 'You have been invited to a new workspace! ' . $inviter['email'] . ' invited you to join ' . $workspace['name'] . '.',
             ]);
 
             echo json_encode([

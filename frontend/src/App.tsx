@@ -7,6 +7,7 @@ import ProtectedRoute from "@/features/utils/ProtectedRoute";
 import LoadingScreen from "@/features/utils/LoadingScreen";
 import UserProfile from "@/features/users/UserProfile";
 import ResetPasswordForm from "@/features/users/ResetPasswordForm";
+import Test from "./features/utils/Test";
 
 import { Routes, Route } from "react-router-dom";
 import { Toaster } from "sonner";
@@ -41,6 +42,7 @@ const App = () => {
         <Route path="registration" element={<Registration />} />
         <Route path="/" element={<Welcome />} />
         <Route path="reset-password" element={<ResetPasswordForm />}/>
+        <Route path="test" element={<Test />}/>
 
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<Layout />}>

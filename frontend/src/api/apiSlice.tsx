@@ -34,7 +34,7 @@ export const apiSlice = createApi({
         url: "getWorkspaces.php",
         method: "GET",
       }),
-      providesTags: ["Workspace"],
+      providesTags: ["Workspace", "User"],
     }),
     addWorkspace: builder.mutation<WorkspaceMutationResponse, NewWorkspace>({
       query: (workspace) => ({
@@ -142,12 +142,35 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ["Notification"],
     }),
-    getNotifications: builder.query<getNotificationResponse, void>({
-      query: () => ({
-        url: 'getNotifications.php',
+    getNotifications: builder.query<getNotificationResponse, string>({
+      query: (userId) => ({
+        url: `getNotifications.php?userId=${userId}`,
         method: 'GET',
       }),
       providesTags: ["Notification"],
+    }),
+    acceptInviation: builder.mutation<WorkspaceMutationResponse, string>({
+      query: (notificationId) => ({
+        url: 'acceptInvitation.php',
+        method: 'POST',
+        body: {notificationId},
+      }),
+      invalidatesTags: ['Workspace', 'Notification']
+    }),
+    declineInvitation: builder.mutation<WorkspaceMutationResponse, string>({
+      query: (notificationId) => ({
+        url: 'declineInvitation.php',
+        method: 'POST',
+        body: {notificationId},
+      })
+    }),
+    deleteNotification: builder.mutation<WorkspaceMutationResponse, string>({
+      query: (notificationId) => ({
+        url: 'deleteNotification.php',
+        method: 'POST',
+        body: {notificationId},
+      }),
+      invalidatesTags: ['Notification'],
     })
   }),
 });
@@ -168,4 +191,7 @@ export const {
   useResetPasswordMutation,
   useSendInvitationMutation,
   useGetNotificationsQuery,
+  useAcceptInviationMutation,
+  useDeclineInvitationMutation,
+  useDeleteNotificationMutation,
 } = apiSlice;

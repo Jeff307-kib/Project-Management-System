@@ -54,6 +54,7 @@ export interface Invitation {
 }
 
 export interface Notification {
+  id: string,
   type: string,
   status: string,
   message: string,

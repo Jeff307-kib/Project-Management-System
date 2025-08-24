@@ -21,6 +21,7 @@ type Props = {
 
 const InviteMemberModal = ({ isOpen, setOpen }: Props) => {
   const { workspaceId } = useParams() as { workspaceId: string}
+
   const [email, setEmail] = useState('')
   const [formError, setFormError] = useState('')
 
