@@ -35,7 +35,7 @@ class User
     public function fetchUser($credential, $password)
     {
         $this->conn = Connection::connect();
-        $sql = "SELECT * FROM users WHERE username = :un OR email = :em";
+        $sql = "SELECT * FROM users WHERE email = :em";
         $this->stmt = $this->conn->prepare($sql);
         $this->stmt->bindParam("un", $credential);
         $this->stmt->bindParam("em", $credential);

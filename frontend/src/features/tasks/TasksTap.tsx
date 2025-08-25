@@ -1,41 +1,53 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { TabsContent } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
+import { useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { Skeleton } from "@/components/ui/skeleton";
+
+import { useGetTasksQuery } from "@/api/apiSlice";
+import TaskExcerpt from "@/features/tasks/TaskExcerpt";
 
 const TasksTap = () => {
+  const navigate = useNavigate();
+  const { workspaceId } = useParams();
+
+  if (!workspaceId) {
+    navigate("/workspace");
+  }
+
+  console.log("Workspace Id: ", workspaceId);
+  const {
+    data: tasks,
+    isLoading,
+    isSuccess,
+    isError,
+    error,
+  } = useGetTasksQuery(workspaceId ?? "");
+
+  let content;
+  if (isLoading) {
+    content = (
+      <div className="grid gap-6 max-w-[1200px] grid-cols-[repeat(auto-fit,minmax(250px,1fr))]">
+        <Skeleton className="w-full h-32" />
+        <Skeleton className="w-full h-32" />
+        <Skeleton className="w-full h-32" />
+      </div>
+    );
+  } else if (isSuccess) {
+    if (tasks.data.length > 0) {
+      content = tasks.data.map((task) => {
+        return <TaskExcerpt key={task.id} taskData={task}/>
+      })
+    } else {
+      content = <p>No Task Available! Create one to get Started!</p>
+    }
+  } else if (isError) {
+    if ("status" in error) {
+      content = <p>Error: {error.status}</p>
+    } else {
+      content = <p>An Unexpected error occured.</p>
+    }
+  }
   return (
-    <TabsContent value="tasks">
-      <Card className="border-0 rounded-none shadow-none">
-        <CardHeader>
-          <CardTitle>Tasks</CardTitle>
-          <CardDescription>
-            Make changes to your account here. Click save when you&apos;re done.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-6">
-          <div className="grid gap-3">
-            <Label htmlFor="tabs-demo-name">Name</Label>
-            <Input id="tabs-demo-name" defaultValue="Pedro Duarte" />
-          </div>
-          <div className="grid gap-3">
-            <Label htmlFor="tabs-demo-username">Username</Label>
-            <Input id="tabs-demo-username" defaultValue="@peduarte" />
-          </div>
-        </CardContent>
-        <CardFooter>
-          <Button>Save changes</Button>
-        </CardFooter>
-      </Card>
-    </TabsContent>
+    <div className="flex flex-wrap justify-center gap-6 p-8 bg-gray-50">{content}</div>
   );
 };
 
