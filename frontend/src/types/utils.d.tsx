@@ -1,4 +1,3 @@
-//For Add and Edit
 export interface ActionButtonProps {
     label: string,
     onClick: () => void,

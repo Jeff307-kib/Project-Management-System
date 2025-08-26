@@ -1,4 +1,4 @@
-import { isPast, isToday, isTomorrow, differenceInDays } from "date-fns";
+import { isPast, isToday, isTomorrow, differenceInDays, parseISO } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import {
   Tooltip,
@@ -31,7 +31,8 @@ const TaskExcerpt = ( { taskData } : Props) => {
   };
 
   const currentDate = new Date();
-  const deadlineDate = new Date(taskData.dueDate);
+  const deadlineDate = parseISO(taskData.due_date);
+  console.log("Deadline Date", deadlineDate)
   const daysUntilDeadline = differenceInDays(deadlineDate, currentDate);
   const isApproaching = daysUntilDeadline < 3 && daysUntilDeadline >= 0;
   const isOverdue = isPast(deadlineDate) && taskData.status !== "Completed";
@@ -67,11 +68,11 @@ const TaskExcerpt = ( { taskData } : Props) => {
           <Tooltip>
             <TooltipTrigger asChild>
               <h3 className="text-lg font-semibold leading-6 tracking-tight group-hover:text-primary transition-colors">
-                {taskData.name}
+                {taskData.title}
               </h3>
             </TooltipTrigger>
             <TooltipContent>
-              <p>{taskData.name}</p>
+              <p>{taskData.title}</p>
             </TooltipContent>
           </Tooltip>
           <p className="text-sm text-muted-foreground">{taskData.description}</p>
@@ -97,7 +98,7 @@ const TaskExcerpt = ( { taskData } : Props) => {
               {deadlineText}
             </p>
           </div>
-          <div className="flex -space-x-2">
+          {/* <div className="flex -space-x-2">
             {taskData.members.map((member) => (
               <Avatar
                 key={member.id}
@@ -107,7 +108,7 @@ const TaskExcerpt = ( { taskData } : Props) => {
                 <AvatarFallback>{member.name.slice(0,2)}</AvatarFallback>
               </Avatar>
             ))}
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

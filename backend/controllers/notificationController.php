@@ -9,11 +9,13 @@ class notificationController
 {
     private $noti;
     private $workspace;
+    private $user;
 
     public function __construct()
     {
         $this->noti = new Notification();
         $this->workspace = new Workspace();
+        $this->user = new User();
     }
 
     function getNotifications()
@@ -68,6 +70,13 @@ class notificationController
 
             $this->noti->updateNotificationStatus($notificationId, 'Accepted');
 
+            $user = $this->user->fetchUserById($userId);
+            $workspace = $this->workspace->fetchWorkspaceById($workspaceId, $userId);
+
+            $invitationReply = "Invitation accepted! " . $user['email'] . " accepted your invitation to " . $workspace['name'] . ".";
+
+            $this->noti->sendReply($notification['sender_id'], $userId, 'Invitation Reply', $workspaceId, 'Unread', $invitationReply);
+
             $this->noti->dropNotification($notificationId);
 
             http_response_code(200);
@@ -105,9 +114,12 @@ class notificationController
 
             $notification = $this->noti->fetchNotificationById($notificationId);
             $workspace = $this->workspace->fetchWorkspaceById($notification['related_id'], $notification['sender_id']);
+            $user = $this->user->fetchUserById($notification['recipient_id']);
 
-            $invitationReply = "Invitation Declined! " . $notification['recipient_id'] . " declined your invitation to " . $workspace['name'] . " .";
-            $this->noti->sendReply($notification['sender_id'], $notification['recipient_id'], 'Invitation Reply', 0, 'Unread', $invitationReply);
+            $invitationReply = "Invitation Declined! " . $user['email'] . " declined your invitation to " . $workspace['name'] . " .";
+            $this->noti->sendReply($notification['sender_id'], $notification['recipient_id'], 'Invitation Reply', $workspace['id'], 'Unread', $invitationReply);
+
+            $this->noti->dropNotification($notificationId);
 
             echo json_encode([
                 'success' => true,

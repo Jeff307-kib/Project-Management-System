@@ -85,7 +85,7 @@ class UserController
             ]);
         } catch (Exception $e) {
             if ($e->getMessage() === "This email is already in use. Please try Logging In!") {
-                http_response_code(409); // 409 Conflict is the correct status for duplicate resources
+                http_response_code(409); 
                 echo json_encode(['error' => $e->getMessage()]);
             } else {
                 http_response_code(400); // Bad Request for other errors
@@ -122,11 +122,11 @@ class UserController
                 'user' => $user,
             ]);
         } catch (Exception $e) {
-            if ($e->getMessage() === "Incorrect email, username or password.") {
+            if ($e->getMessage() === "Incorrect email or password.") {
                 http_response_code(409);
-                echo json_encode(['error' => 'Incorrect email, username or password.']);
+                echo json_encode(['error' => 'Incorrect email or password.']);
             } else {
-                http_response_code(500); // Database query failed 
+                http_response_code(500);
                 echo json_encode(['error' => "An unexpected error occured!"]);
             }
         }

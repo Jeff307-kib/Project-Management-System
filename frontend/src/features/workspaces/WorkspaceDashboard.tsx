@@ -31,6 +31,7 @@ import WorkspaceModal from "@/features/workspaces/WorkspaceModal";
 import DeleteButton from "@/features/utils/DeleteButton";
 import TasksTap from "@/features/tasks/TasksTap";
 import MembersTab from "@/features/users/MembersTab";
+import TaskModal from "@/features/tasks/TaskModal";
 
 import { useGetWorkspaceByIdQuery } from "@/api/apiSlice";
 import { useParams } from "react-router-dom";
@@ -56,6 +57,16 @@ const WorkspaceDashboard = () => {
   const handleAdd = () => {
     setIsOpen(true);
   };
+
+  const [isTaskOpen, setIsTaskOpen] = useState(false);
+
+  const handleAddTask = () => {
+    setIsTaskOpen(true)
+  }
+
+  const setTaskOpen = () => {
+    setIsTaskOpen(!isTaskOpen)
+  }
 
   let workspaceName;
   const name = data?.data?.name;
@@ -90,6 +101,11 @@ const WorkspaceDashboard = () => {
             workspace={data.data}
             label={label}
           />
+          <TaskModal
+            label="Add"
+            taskOpen={isTaskOpen}
+            setTaskOpen={setTaskOpen}
+          />
           <SearchBox />
           <TabsList className="mr-4">
             <TabsTrigger value="tasks">Tasks</TabsTrigger>
@@ -103,7 +119,7 @@ const WorkspaceDashboard = () => {
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-48 p-2 flex flex-col gap-2">
-              <AddButton label="Task" onClick={handleAdd} />
+              <AddButton label="Task" onClick={handleAddTask} />
               <EditButton label="Workspace" onClick={handleAdd} />
               <DeleteButton label="Workspace" id={workspaceIdNumber} />
             </PopoverContent>

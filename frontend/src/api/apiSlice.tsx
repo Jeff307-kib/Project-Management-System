@@ -19,7 +19,7 @@ import type {
   ResetPassword,
 } from "@/types/users.d";
 
-import type { GetTasksResponse } from "@/types/tasks.d";
+import type { GetTasksResponse, TaskMutationResponse, AddTask } from "@/types/tasks.d";
 
 export const apiSlice = createApi({
   reducerPath: "api",
@@ -164,6 +164,7 @@ export const apiSlice = createApi({
         method: "POST",
         body: { notificationId },
       }),
+      invalidatesTags: ["Workspace", "Notification"],
     }),
     deleteNotification: builder.mutation<WorkspaceMutationResponse, string>({
       query: (notificationId) => ({
@@ -179,6 +180,14 @@ export const apiSlice = createApi({
         method: "GET",
       }),
       providesTags: ['Task'],
+    }),
+    addTask: builder.mutation<TaskMutationResponse, AddTask>({
+      query: (task) => ({
+        url: 'addTask.php',
+        method: 'POST',
+        body: task
+      }),
+      invalidatesTags: ['Task']
     })
   }),
 });
@@ -203,4 +212,5 @@ export const {
   useDeclineInvitationMutation,
   useDeleteNotificationMutation,
   useGetTasksQuery,
+  useAddTaskMutation,
 } = apiSlice;

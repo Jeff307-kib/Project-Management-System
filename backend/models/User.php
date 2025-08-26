@@ -37,7 +37,6 @@ class User
         $this->conn = Connection::connect();
         $sql = "SELECT * FROM users WHERE email = :em";
         $this->stmt = $this->conn->prepare($sql);
-        $this->stmt->bindParam("un", $credential);
         $this->stmt->bindParam("em", $credential);
 
         if (!$this->stmt->execute()) {
@@ -47,7 +46,7 @@ class User
         $row = $this->stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$row || !password_verify($password, $row['password'])) {
-            throw new Exception("Incorrect email, username or password.");
+            throw new Exception("Incorrect email or password.");
         }
 
         return $row;

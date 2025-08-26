@@ -53,7 +53,7 @@ class workspaceController
         }
 
         try {
-            $userId = $_SESSION['userId']; //Would use SESSION Later :D
+            $userId = $_SESSION['userId']; 
             $name = $data['name'];
             $description = empty($data['description']) ? null : $data['description'];
             $description = $data['description'] ?? null;
@@ -71,8 +71,8 @@ class workspaceController
                 ]);
             }
         } catch (Exception $e) {
-            http_response_code(400);
-            echo json_encode(['error' => $e->getMessage()]);
+            http_response_code(500);
+            echo json_encode(['error' => "Unexpected error occured: " . $e->getMessage()]);
         }
     }
 

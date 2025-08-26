@@ -33,6 +33,7 @@ const InviteMemberModal = ({ isOpen, setOpen }: Props) => {
     try {
       await sendInvitation({email, workspaceId}).unwrap()
       SuccessToast("Inviation Sent Successfully!", "You will recieve a notification when the invitation is accept or decline.")
+      setFormError('')
     } catch (err) {
       console.log("Invitation failed: ", err)
       if (err && typeof err === "object" && "data" in err) {

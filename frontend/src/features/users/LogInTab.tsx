@@ -77,7 +77,7 @@ const LogInTab = () => {
             <div className="grid gap-3">
               <Label htmlFor="credential">Enter Email</Label>
               <Input
-                type="text"
+                type="email"
                 id="credential"
                 name="credential"
                 value={credential}
