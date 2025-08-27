@@ -1,3 +1,5 @@
+import type { Member } from "@/types/workspace.d";
+
 export interface Task {
   id: string,
   title: string,
@@ -5,14 +7,9 @@ export interface Task {
   status: string,
   due_date: string,
   priority_level: string,
+  members: Member[] | []
 }
 
-export interface Member {
-  id: string,
-  name: string,
-  email: string,
-  profileImage: string,
-}
 
 export interface GetTasksResponse {
   succsss: boolean,
@@ -39,4 +36,5 @@ export interface AddTask {
   priorityLevel: string,
   userId: string,
   workspaceId: string,
+  members: string[]
 }

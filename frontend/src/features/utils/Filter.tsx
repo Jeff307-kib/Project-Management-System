@@ -5,6 +5,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ListFilter } from "lucide-react";
 
 import type { FilterProps } from "@/types/utils.d";
 import { Button } from "@/components/ui/button";
@@ -13,7 +14,7 @@ const Filter = ({ onFilterChange }: FilterProps) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline">Filter</Button>
+        <Button variant="outline"><ListFilter /></Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuItem onClick={() => onFilterChange("date")}>

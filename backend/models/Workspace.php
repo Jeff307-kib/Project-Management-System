@@ -168,4 +168,24 @@
             return false;
             
         }
+
+        public function fetchMembers($workspaceId) {
+            $this->conn = Connection::connect();
+
+            $sql = "
+                SELECT u.id, u.username, u.email, u.profile_url FROM users u
+                JOIN user_workspace uw ON uw.user_id = u.id
+                WHERE uw.workspace_id = :wi
+            ";
+            $this->stmt = $this->conn->prepare($sql);
+            $this->stmt->bindParam(":wi", $workspaceId);
+            $this->stmt->execute();
+            $row = $this->stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            if ($row) {
+                return $row;
+            }
+
+            return [];
+        }
     }

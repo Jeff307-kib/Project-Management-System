@@ -1,4 +1,10 @@
-import { isPast, isToday, isTomorrow, differenceInDays, parseISO } from "date-fns";
+import {
+  isPast,
+  isToday,
+  isTomorrow,
+  differenceInDays,
+  parseISO,
+} from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import {
   Tooltip,
@@ -6,15 +12,15 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
-import { Clock, CheckCircle, Flame, Calendar } from "lucide-react";
+import { Clock, CheckCircle, Flame, Calendar, ChevronsUp, ChevronsDown, Star } from "lucide-react";
 
 import type { Task } from "@/types/tasks.d";
 
 type Props = {
-  taskData: Task
-}
+  taskData: Task;
+};
 
-const TaskExcerpt = ( { taskData } : Props) => {
+const TaskExcerpt = ({ taskData }: Props) => {
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
       case "To Do":
@@ -30,24 +36,50 @@ const TaskExcerpt = ( { taskData } : Props) => {
     }
   };
 
+  const getPriorityInfo = (priority: string) => {
+    switch (priority) {
+      case "high":
+        return {
+          icon: <ChevronsUp className="w-3.5 h-3.5 text-red-500" />,
+          text: "High Priority",
+        };
+      case "moderate":
+        return {
+          icon: <Star className="w-3.5 h-3.5 text-yellow-500" />,
+          text: "Medium Priority",
+        };
+      case "low":
+        return {
+          icon: <ChevronsDown className="w-3.5 h-3.5 text-green-500" />,
+          text: "Low Priority",
+        };
+      default:
+        return {
+          icon: null,
+          text: "",
+        };
+    }
+  };
+  
+  const priorityInfo = getPriorityInfo(taskData.priority_level);
+
   const currentDate = new Date();
   const deadlineDate = parseISO(taskData.due_date);
-  console.log("Deadline Date", deadlineDate)
   const daysUntilDeadline = differenceInDays(deadlineDate, currentDate);
   const isApproaching = daysUntilDeadline < 3 && daysUntilDeadline >= 0;
   const isOverdue = isPast(deadlineDate) && taskData.status !== "Completed";
 
-  let deadlineText
+  let deadlineText;
   if (isOverdue) {
-    deadlineText = "Overdue"
+    deadlineText = "Overdue";
   } else if (isToday(deadlineDate)) {
-    deadlineText = "Today"
+    deadlineText = "Today";
   } else if (isTomorrow(deadlineDate)) {
-    deadlineText = "Tomorrow"
-  } else if (taskData.status === 'Completed') {
-    deadlineText = "Completed"
+    deadlineText = "Tomorrow";
+  } else if (taskData.status === "Completed") {
+    deadlineText = "Completed";
   } else {
-    deadlineText = `Due in ${daysUntilDeadline} days`
+    deadlineText = `Due in ${daysUntilDeadline} days`;
   }
 
   let deadlineIcon;
@@ -75,7 +107,9 @@ const TaskExcerpt = ( { taskData } : Props) => {
               <p>{taskData.title}</p>
             </TooltipContent>
           </Tooltip>
-          <p className="text-sm text-muted-foreground">{taskData.description}</p>
+          <p className="text-sm text-muted-foreground">
+            {taskData.description}
+          </p>
         </div>
         <Badge variant={getStatusBadgeVariant(taskData.status)}>
           {taskData.status}
@@ -98,7 +132,15 @@ const TaskExcerpt = ( { taskData } : Props) => {
               {deadlineText}
             </p>
           </div>
-          {/* <div className="flex -space-x-2">
+          {/* NEW: Display priority info */}
+          {priorityInfo.text && (
+            <div className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
+              {priorityInfo.icon}
+              <p>{priorityInfo.text}</p>
+            </div>
+          )}
+        </div>
+        {/* <div className="flex -space-x-2">
             {taskData.members.map((member) => (
               <Avatar
                 key={member.id}
@@ -109,7 +151,6 @@ const TaskExcerpt = ( { taskData } : Props) => {
               </Avatar>
             ))}
           </div> */}
-        </div>
       </div>
     </div>
   );

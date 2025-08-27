@@ -40,7 +40,7 @@ import { useNavigate } from "react-router-dom";
 
 const WorkspaceDashboard = () => {
   const navigate = useNavigate();
-  const { workspaceId } = useParams();
+  const { workspaceId = '' } = useParams();
   const workspaceIdNumber = Number(workspaceId);
 
   // console.log(workspaceId);
@@ -126,7 +126,7 @@ const WorkspaceDashboard = () => {
           </Popover>
         </div>
         <TasksTap />
-        <MembersTab />
+        <MembersTab workspaceId={workspaceId}/>
         <TabsContent value="report">
           <Card className="border-0 rounded-none shadow-none">
             <CardHeader>

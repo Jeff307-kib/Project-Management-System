@@ -8,6 +8,7 @@ import type {
   GetWorkspaceByIdResponse,
   Invitation,
   getNotificationResponse,
+  GetMembersResponse,
 } from "@/types/workspace.d";
 
 import type {
@@ -174,6 +175,12 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ["Notification"],
     }),
+    getMembers: builder.query<GetMembersResponse, string>({
+      query: (workspaceId) => ({
+        url: `getMembers.php?workspaceId=${workspaceId}`,
+        method: 'GET'
+      })  
+    }),
     getTasks: builder.query<GetTasksResponse, string>({
       query: (workspaceId) => ({
         url: `getTasks.php?workspaceId=${workspaceId}`,
@@ -188,7 +195,7 @@ export const apiSlice = createApi({
         body: task
       }),
       invalidatesTags: ['Task']
-    })
+    }),
   }),
 });
 
@@ -211,6 +218,7 @@ export const {
   useAcceptInviationMutation,
   useDeclineInvitationMutation,
   useDeleteNotificationMutation,
+  useGetMembersQuery,
   useGetTasksQuery,
   useAddTaskMutation,
 } = apiSlice;

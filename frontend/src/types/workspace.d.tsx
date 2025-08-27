@@ -66,3 +66,16 @@ export interface getNotificationResponse {
   message: string,
   notifications: Notification[] | [],
 }
+
+export interface Member {
+  id: string,
+  username: string,
+  email: string,
+  profile_url: string,
+}
+
+export interface GetMembersResponse {
+  success: boolean,
+  message: string,
+  data: Member[] | []
+}

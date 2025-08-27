@@ -58,6 +58,21 @@ class Task {
         $this->stmt->bindParam(":wi", $workspaceId);
 
         if ($this->stmt->execute()) {
+            return $this->conn->lastInsertId();
+        }
+
+        return false;
+    }
+
+    public function insertTaskAssignees($taskId, $userId) {
+        $this->conn = Connection::connect();
+
+        $sql = "INSERT INTO task_assignees  (task_id, user_id) VALUES (:ti, :ui)";
+        $this->stmt = $this->conn->prepare($sql);
+        $this->stmt->bindParam(":ti", $taskId);
+        $this->stmt->bindParam(":ui", $userId);
+
+        if ($this->stmt->execute()) {
             return true;
         }
 

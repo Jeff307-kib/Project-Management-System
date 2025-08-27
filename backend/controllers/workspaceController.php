@@ -53,7 +53,7 @@ class workspaceController
         }
 
         try {
-            $userId = $_SESSION['userId']; 
+            $userId = $_SESSION['userId'];
             $name = $data['name'];
             $description = empty($data['description']) ? null : $data['description'];
             $description = $data['description'] ?? null;
@@ -165,7 +165,8 @@ class workspaceController
         }
     }
 
-    function inviteMember() {
+    function inviteMember()
+    {
         $data = json_decode(file_get_contents("php://input"), true);
         try {
             if (!isset($data['email'])) {
@@ -201,7 +202,7 @@ class workspaceController
             }
 
             $this->noti->createNotification([
-                'recipient_id' =>$inviteeId,
+                'recipient_id' => $inviteeId,
                 'sender_id' => $inviterId,
                 'type' => 'Invitation',
                 'related_id' => $workspaceId,
@@ -213,10 +214,40 @@ class workspaceController
                 'success' => true,
                 'message' => 'Invitation sent successfully!',
             ]);
-
         } catch (Exception $e) {
             http_response_code(500);
             echo json_encode(['error' => 'An unexpected error occured: ' . $e->getMessage()]);
+        }
+    }
+
+    function getMembers()
+    {
+        try {
+            if (empty($_GET['workspaceId'])) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Missing Workspace ID!']);
+                return;
+            }
+
+            $workspaceId = $_GET['workspaceId'];
+
+            $members = $this->workspace->fetchMembers($workspaceId);
+            if (empty($members)) {
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Members fetched successfully',
+                    'data' => [],
+                ]);
+            } else {
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Members fetched successfully',
+                    'data' => $members,
+                ]);
+            }
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Unexpected error occured: ' . $e->getMessage()]);
         }
     }
 }

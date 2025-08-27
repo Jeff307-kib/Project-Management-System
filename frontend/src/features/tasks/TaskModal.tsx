@@ -1,7 +1,8 @@
 import React from "react";
 import { useState } from "react";
-import { format } from "date-fns";
+import { format, isPast, isSameDay } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
+import { Users } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -23,6 +24,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
@@ -31,14 +34,15 @@ import { useSelector } from "react-redux";
 import type { RootState } from "@/app/store";
 import type { TaskModalProps } from "@/types/tasks.d";
 import { useAddTaskMutation } from "@/api/apiSlice";
+import { useGetMembersQuery } from "@/api/apiSlice";
 import { SuccessToast } from "@/features/utils/SuccessToast";
 
 const TaskModal = ({ label, taskOpen, setTaskOpen }: TaskModalProps) => {
   const navigate = useNavigate();
-  const { workspaceId = '' } = useParams();
+  const { workspaceId = "" } = useParams();
 
   if (!workspaceId) {
-    navigate("/workspace"); 
+    navigate("/workspace");
   }
 
   const userId = useSelector((state: RootState) => state.auth.user?.id) ?? "";
@@ -48,6 +52,7 @@ const TaskModal = ({ label, taskOpen, setTaskOpen }: TaskModalProps) => {
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("");
   const [formError, setFormError] = useState("");
+  const [assignedMembers, setAssignedMembers] = useState<string[]>([]);
 
   const [addTask, { isLoading }] = useAddTaskMutation();
 
@@ -60,16 +65,22 @@ const TaskModal = ({ label, taskOpen, setTaskOpen }: TaskModalProps) => {
     }
 
     if (!priority) {
-      setFormError("Please set a priority level!")
-      return
+      setFormError("Please set a priority level!");
+      return;
     }
 
     if (!dueDate) {
-      setFormError("Please set a due date!")
-      return
+      setFormError("Please set a due date!");
+      return;
     }
 
-    const formattedDate = dueDate?.toISOString().slice(0, 10);
+    const now = new Date();
+    if (isPast(dueDate) || isSameDay(dueDate, now)) {
+      setFormError("Please set a date onwards today!");
+      return;
+    }
+
+    const formattedDate = format(dueDate, "yyyy-MM-dd");
 
     try {
       await addTask({
@@ -79,13 +90,16 @@ const TaskModal = ({ label, taskOpen, setTaskOpen }: TaskModalProps) => {
         priorityLevel: priority,
         userId: userId,
         workspaceId: workspaceId,
-      }).unwrap()
-      SuccessToast("New Task Added")
-      setTitle('')
-      setDescription('')
-      setPriority('')
-      setFormError('')
-      setTaskOpen()
+        members: assignedMembers,
+      }).unwrap();
+      SuccessToast("New Task Added");
+      setTitle("");
+      setDescription("");
+      setPriority("");
+      setFormError("");
+      setTaskOpen();
+      setDueDate(undefined);
+      setAssignedMembers([])
     } catch (err) {
       if (err && typeof err === "object" && "data" in err) {
         const typedErr = err as { data?: { error?: string } };
@@ -93,8 +107,21 @@ const TaskModal = ({ label, taskOpen, setTaskOpen }: TaskModalProps) => {
       } else {
         setFormError("Something went wrong!");
       }
+      console.log(err)
+    }
+    // console.log("assigned members", assignedMembers)
+  }
+
+  const { data: members } = useGetMembersQuery(workspaceId);
+
+  const handleMemberSelect = (memberId: string) => {
+    if (assignedMembers.includes(memberId)) {
+      setAssignedMembers(assignedMembers.filter((id) => id !== memberId));
+    } else {
+      setAssignedMembers([...assignedMembers, memberId]);
     }
   };
+
   return (
     <Dialog open={taskOpen} onOpenChange={setTaskOpen}>
       <DialogContent>
@@ -156,12 +183,48 @@ const TaskModal = ({ label, taskOpen, setTaskOpen }: TaskModalProps) => {
             </Popover>
           </div>
 
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant={"outline"}>
+                {assignedMembers.length > 0
+                  ? `Assigned to ${assignedMembers.length} member(s)`
+                  : "Assign Members"}
+                <Users />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent>
+              <div className="flex flex-col p-2 space-y-1 max-h-48 overflow-y-auto">
+                {members &&
+                  members.data.map((member) => {
+                    return (
+                      <div
+                        key={member.id}
+                        className="flex items-center justify-between px-2 py-1 rounded-md cursor-pointer hover:bg-gray-100"
+                      >
+                        <Checkbox
+                          id={member.id}
+                          checked={assignedMembers.includes(member.id)}
+                          onCheckedChange={() => handleMemberSelect(member.id)}
+                        />
+                        <Label
+                          htmlFor={member.id}
+                          className="text-sm font-medium w-full px-2 cursor-pointer"
+                        >
+                          {member.username}
+                        </Label>
+                      </div>
+                    );
+                  })}
+              </div>
+            </PopoverContent>
+          </Popover>
+
           <button
             type="submit"
             className="bg-primary text-white px-4 py-2 rounded cursor-pointer"
             disabled={isLoading}
           >
-            {isLoading ? 'Adding' : 'Add Task'}
+            {isLoading ? "Adding" : "Add Task"}
           </button>
         </form>
       </DialogContent>

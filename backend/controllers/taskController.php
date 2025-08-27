@@ -1,14 +1,17 @@
 <?php
 require_once '../config/authCheck.php';
 include_once '../models/Task.php';
+include_once '../models/Workspace.php';
 
 class taskController
 {
     private $task;
+    private $workspace;
 
     public function __construct()
     {
         $this->task = new Task();
+        $this->workspace = new Workspace();
     }
 
     function getTasks()
@@ -22,6 +25,7 @@ class taskController
             $workspaceId = $_GET['workspaceId'];
 
             $tasks = $this->task->fetchTasks($workspaceId);
+            $members = $this->workspace->fetchMembers($workspaceId);
 
             if (empty($tasks)) {
                 echo json_encode([
@@ -72,7 +76,13 @@ class taskController
                 return;
             }
 
-            $this->task->insertTask($title, $description, $status, $dueDate, $priorityLevel, $creatorId, $workspaceId);
+            $taskId = $this->task->insertTask($title, $description, $status, $dueDate, $priorityLevel, $creatorId, $workspaceId);
+
+            if (isset($data['members'])) {
+                foreach($data['members'] as $memberId) {
+                    $this->task->insertTaskAssignees($taskId, $memberId);
+                }
+            }
             echo json_encode([
                 'success' => true,
                 'message' => "Task Added Successfully!",
