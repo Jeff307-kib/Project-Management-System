@@ -2,16 +2,19 @@
 require_once '../config/authCheck.php';
 include_once '../models/Task.php';
 include_once '../models/Workspace.php';
+include_once '../models/User.php';
 
 class taskController
 {
     private $task;
     private $workspace;
+    private $user;
 
     public function __construct()
     {
         $this->task = new Task();
         $this->workspace = new Workspace();
+        $this->user = new User();
     }
 
     function getTasks()
@@ -25,7 +28,16 @@ class taskController
             $workspaceId = $_GET['workspaceId'];
 
             $tasks = $this->task->fetchTasks($workspaceId);
-            $members = $this->workspace->fetchMembers($workspaceId);
+
+            if (!empty($tasks)) {
+                foreach($tasks as $key => $task) {
+                    $taskId = $task['id'];
+                    $memberDetails = [];
+                    $memberDetails = $this->getTaskAssigneesDetails($taskId);
+
+                    $tasks[$key]['members'] = $memberDetails;
+                }
+            }
 
             if (empty($tasks)) {
                 echo json_encode([
@@ -91,5 +103,15 @@ class taskController
             http_response_code(500);
             echo json_encode(['error' => 'Unexpected error occured: ' . $e->getMessage()]);
         }
+    }
+
+    function getTaskAssigneesDetails($taskId) {
+        $membersDetails = array();
+        $members = $this->task->fetchTaskAssignees($taskId);
+        foreach ($members as $member) {
+            $singleMemberDetail = $this->user->fetchUserById($member['user_id']);
+            array_push($membersDetails, $singleMemberDetail);
+        }
+        return $membersDetails;
     }
 }

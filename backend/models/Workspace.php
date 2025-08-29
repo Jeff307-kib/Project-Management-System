@@ -173,7 +173,7 @@
             $this->conn = Connection::connect();
 
             $sql = "
-                SELECT u.id, u.username, u.email, u.profile_url FROM users u
+                SELECT u.id, u.username, u.email, u.profile_url, uw.role, uw.joined_at FROM users u
                 JOIN user_workspace uw ON uw.user_id = u.id
                 WHERE uw.workspace_id = :wi
             ";

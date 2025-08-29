@@ -8,7 +8,7 @@ const EditButton = ({ label, onClick }: ActionButtonProps) => {
   return (
     <Button
       variant="ghost"
-      className="justify-start gap-2"
+      className="justify-start gap-2 cursor-pointer"
       onClick={onClick}
     >
       <Pencil className="w-4 h-4" />

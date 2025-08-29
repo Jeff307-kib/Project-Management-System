@@ -22,7 +22,6 @@ const WorkspaceModal = ({ label, isOpen, setOpen, workspace }: WorkspaceModalPro
 
   useEffect(() => {
     if (workspace) {
-      // console.log("Opening modal with workspace:", workspace);
       setName(workspace.name || "")
       setDescription(workspace.description || "")
     } else {

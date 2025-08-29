@@ -1,5 +1,3 @@
-import type { Member } from "@/types/workspace.d";
-
 export interface Task {
   id: string,
   title: string,
@@ -7,7 +5,7 @@ export interface Task {
   status: string,
   due_date: string,
   priority_level: string,
-  members: Member[] | []
+  members: TaskAssignee[] | []
 }
 
 
@@ -37,4 +35,11 @@ export interface AddTask {
   userId: string,
   workspaceId: string,
   members: string[]
+}
+
+export interface TaskAssignee {
+  id: string,
+  username: string,
+  email: string,
+  profile_url: string, 
 }

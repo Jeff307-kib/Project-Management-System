@@ -55,7 +55,7 @@ const DeleteButton = ({ label, id }: DeleteButtonProps) => {
       <AlertDialogTrigger asChild>
         <Button
           variant="ghost"
-          className="justify-start gap-2 text-destructive"
+          className="justify-start gap-2 text-destructive cursor-pointer"
         >
           <Trash2 className="w-4 h-4" />
           Delete {label}

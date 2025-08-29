@@ -2,7 +2,6 @@ import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TabsContent } from "@/components/ui/tabs";
-
 import { useGetTasksQuery } from "@/api/apiSlice";
 import TaskExcerpt from "@/features/tasks/TaskExcerpt";
 
@@ -49,11 +48,11 @@ const TasksTap = () => {
     }
   }
   return (
-    <TabsContent value="tasks">
+    // <TabsContent value="tasks">
       <div className="flex flex-wrap justify-center gap-6 p-8 bg-gray-50">
         {content}
       </div>
-    </TabsContent>
+    // </TabsContent>
   );
 };
 

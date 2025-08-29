@@ -11,16 +11,29 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { Clock, CheckCircle, Flame, Calendar, ChevronsUp, ChevronsDown, Star } from "lucide-react";
+import {
+  Clock,
+  CheckCircle,
+  Flame,
+  Calendar,
+  ChevronsUp,
+  ChevronsDown,
+  Star,
+} from "lucide-react";
 
 import type { Task } from "@/types/tasks.d";
+import { useNavigate } from "react-router-dom";
 
 type Props = {
   taskData: Task;
 };
 
 const TaskExcerpt = ({ taskData }: Props) => {
+  const navigate = useNavigate();
+  const backendURL = "http://localhost/projectManagementSystem/backend/public";
+
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
       case "To Do":
@@ -42,16 +55,19 @@ const TaskExcerpt = ({ taskData }: Props) => {
         return {
           icon: <ChevronsUp className="w-3.5 h-3.5 text-red-500" />,
           text: "High Priority",
+          bg: "bg-destructive",
         };
       case "moderate":
         return {
           icon: <Star className="w-3.5 h-3.5 text-yellow-500" />,
           text: "Medium Priority",
+          bg: "bg-yellow-500",
         };
       case "low":
         return {
           icon: <ChevronsDown className="w-3.5 h-3.5 text-green-500" />,
           text: "Low Priority",
+          bg: "bg-green-500",
         };
       default:
         return {
@@ -60,7 +76,7 @@ const TaskExcerpt = ({ taskData }: Props) => {
         };
     }
   };
-  
+
   const priorityInfo = getPriorityInfo(taskData.priority_level);
 
   const currentDate = new Date();
@@ -94,7 +110,10 @@ const TaskExcerpt = ({ taskData }: Props) => {
   }
 
   return (
-    <div className="group flex flex-col justify-between rounded-lg border bg-card text-card-foreground shadow-sm transition-shadow hover:shadow-md w-72 cursor-pointer">
+    <div
+      className="group flex flex-col justify-between rounded-lg border bg-card text-card-foreground shadow-sm transition-shadow hover:shadow-md w-72 cursor-pointer overflow-hidden"
+      onClick={() => navigate(`tasks/${taskData.id}`)}
+    >
       <div className="flex items-start justify-between p-4">
         <div className="space-y-1.5">
           <Tooltip>
@@ -116,7 +135,7 @@ const TaskExcerpt = ({ taskData }: Props) => {
         </Badge>
       </div>
 
-      <div className="flex flex-col gap-4 p-4 pt-0">
+      <div className="flex flex-col gap-4 px-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
             {deadlineIcon}
@@ -132,7 +151,6 @@ const TaskExcerpt = ({ taskData }: Props) => {
               {deadlineText}
             </p>
           </div>
-          {/* NEW: Display priority info */}
           {priorityInfo.text && (
             <div className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
               {priorityInfo.icon}
@@ -140,18 +158,25 @@ const TaskExcerpt = ({ taskData }: Props) => {
             </div>
           )}
         </div>
-        {/* <div className="flex -space-x-2">
-            {taskData.members.map((member) => (
-              <Avatar
-                key={member.id}
-                className="h-8 w-8 border-2 border-card transition-transform group-hover:scale-110"
-              >
-                <AvatarImage src={member.profileImage} alt={member.name} />
-                <AvatarFallback>{member.name.slice(0,2)}</AvatarFallback>
-              </Avatar>
-            ))}
-          </div> */}
+        <div className="flex -space-x-2">
+          {taskData.members &&
+            taskData.members.map((member) => {
+              return (
+                <Avatar
+                  key={member.id}
+                  className="h-8 w-8 border-2 border-card transition-transform group-hover:scale-110"
+                >
+                  <AvatarImage
+                    src={`${backendURL}/${member.profile_url}`}
+                    alt={member.username}
+                  />
+                  <AvatarFallback>{member.username.slice(0, 2)}</AvatarFallback>
+                </Avatar>
+              );
+            })}
+        </div>
       </div>
+      <span className={cn("h-1", priorityInfo && priorityInfo.bg)}></span>
     </div>
   );
 };

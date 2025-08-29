@@ -34,13 +34,13 @@ import MembersTab from "@/features/users/MembersTab";
 import TaskModal from "@/features/tasks/TaskModal";
 
 import { useGetWorkspaceByIdQuery } from "@/api/apiSlice";
-import { useParams } from "react-router-dom";
+import { Outlet, useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
 const WorkspaceDashboard = () => {
   const navigate = useNavigate();
-  const { workspaceId = '' } = useParams();
+  const { workspaceId = "", taskId = "" } = useParams();
   const workspaceIdNumber = Number(workspaceId);
 
   // console.log(workspaceId);
@@ -61,20 +61,15 @@ const WorkspaceDashboard = () => {
   const [isTaskOpen, setIsTaskOpen] = useState(false);
 
   const handleAddTask = () => {
-    setIsTaskOpen(true)
-  }
+    setIsTaskOpen(true);
+  };
 
   const setTaskOpen = () => {
-    setIsTaskOpen(!isTaskOpen)
-  }
+    setIsTaskOpen(!isTaskOpen);
+  };
 
-  let workspaceName;
   const name = data?.data?.name;
-  if (name && name.length > 45) {
-    workspaceName = name.substring(0, 45) + "...";
-  } else {
-    workspaceName = name;
-  }
+  const workspaceName = name && name.length > 45 ? name.substring(0, 45) + "..." : name;
 
   let content;
   if (isLoading) {
@@ -82,51 +77,58 @@ const WorkspaceDashboard = () => {
   } else if (isSuccess) {
     content = (
       <Tabs defaultValue="tasks">
-        <div className=" w-full flex justify-end p-2">
-          <Tooltip>
-            <TooltipTrigger>
-              <Link to='/workspace'>
-                <h1 className="text-xl text-center font-semibold mr-4">
-                  {workspaceName}
-                </h1>
-              </Link>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{data.data.name}</p>
-            </TooltipContent>
-          </Tooltip>
-          <WorkspaceModal
-            isOpen={isOpen}
-            setOpen={setOpen}
-            workspace={data.data}
-            label={label}
-          />
-          <TaskModal
-            label="Add"
-            taskOpen={isTaskOpen}
-            setTaskOpen={setTaskOpen}
-          />
-          <SearchBox />
-          <TabsList className="mr-4">
-            <TabsTrigger value="tasks">Tasks</TabsTrigger>
-            <TabsTrigger value="members">Members</TabsTrigger>
-            <TabsTrigger value="report">Report</TabsTrigger>
-          </TabsList>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <MoreVertical />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-48 p-2 flex flex-col gap-2">
-              <AddButton label="Task" onClick={handleAddTask} />
-              <EditButton label="Workspace" onClick={handleAdd} />
-              <DeleteButton label="Workspace" id={workspaceIdNumber} />
-            </PopoverContent>
-          </Popover>
-        </div>
-        <TasksTap />
-        <MembersTab workspaceId={workspaceId}/>
+        {!taskId && (
+          <div className=" w-full flex justify-end p-6 shadow">
+            <Tooltip>
+              <TooltipTrigger>
+                <Link to="/workspace">
+                  <h1 className="text-xl text-center font-semibold mr-4">
+                    {workspaceName}
+                  </h1>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{data.data.name}</p>
+              </TooltipContent>
+            </Tooltip>
+            <WorkspaceModal
+              isOpen={isOpen}
+              setOpen={setOpen}
+              workspace={data.data}
+              label={label}
+            />
+            <TaskModal
+              label="Add"
+              taskOpen={isTaskOpen}
+              setTaskOpen={setTaskOpen}
+            />
+            <SearchBox />
+            <TabsList className="mr-4">
+              <TabsTrigger value="tasks">Tasks</TabsTrigger>
+              <TabsTrigger value="members">Members</TabsTrigger>
+              <TabsTrigger value="report">Report</TabsTrigger>
+            </TabsList>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <MoreVertical />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-48 p-2 flex flex-col gap-2">
+                <AddButton label="Task" onClick={handleAddTask} />
+                <EditButton label="Workspace" onClick={handleAdd} />
+                <DeleteButton label="Workspace" id={workspaceIdNumber} />
+              </PopoverContent>
+            </Popover>
+          </div>
+        )}
+        <TabsContent value="tasks">
+          {taskId ? <Outlet /> : <TasksTap />}
+        </TabsContent>
+        <TabsContent value="members">
+          <MembersTab />
+        </TabsContent>
+
         <TabsContent value="report">
           <Card className="border-0 rounded-none shadow-none">
             <CardHeader>
@@ -155,8 +157,8 @@ const WorkspaceDashboard = () => {
     );
   } else if (isError) {
     if ("status" in error) {
-      if (error.status == 'CUSTOM_ERROR') {
-        navigate('/registration')
+      if (error.status == "CUSTOM_ERROR") {
+        navigate("/registration");
       }
       content = <p>Error: {error.status}</p>;
     } else {

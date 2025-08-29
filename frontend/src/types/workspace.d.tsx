@@ -72,6 +72,8 @@ export interface Member {
   username: string,
   email: string,
   profile_url: string,
+  role: string,
+  joined_at: string,
 }
 
 export interface GetMembersResponse {

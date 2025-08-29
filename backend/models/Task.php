@@ -78,4 +78,20 @@ class Task {
 
         return false;
     }
+
+    public function fetchTaskAssignees($taskId) {
+        $this->conn = Connection::connect();
+
+        $sql = "SELECT user_id FROM task_assignees WHERE task_id = :ti";
+        $this->stmt = $this->conn->prepare($sql);
+        $this->stmt->bindParam(":ti", $taskId);
+        $this->stmt->execute();
+        $row = $this->stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if ($row) {
+            return $row;
+        }
+
+        return [];
+    }
 }
