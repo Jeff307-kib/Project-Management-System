@@ -32,7 +32,7 @@ const DeleteButton = ({ label, id }: DeleteButtonProps) => {
         const result = await deleteWorksapce(id).unwrap();
         if (result.success) {
           SuccessToast("Workspace Deleted!", "Workspace Deleted Successfully!")
-          navigate("/workspace");
+          navigate("/workspace")
         }
       } catch (err) {
         ErrorToast("Failed to Delete Workpace!")
@@ -40,13 +40,17 @@ const DeleteButton = ({ label, id }: DeleteButtonProps) => {
       }
     } else if (label === "Task") {
       try {
-        const result = await deleteTask(id).unwrap();
+        const result = await deleteTask(String(id)).unwrap();
         if (result.success) {
-          //navigate or update task list
+          SuccessToast("Task Deleted!", "Task Deleted Successfully!")
+          navigate(-1)
         }
+        console.log("Delete result", result)
       } catch (err) {
         console.error("Failed to delete task:", err);
       }
+
+      // console.log("Task delete", id)
     }
   };
 

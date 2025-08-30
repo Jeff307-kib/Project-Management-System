@@ -20,7 +20,13 @@ import type {
   ResetPassword,
 } from "@/types/users.d";
 
-import type { GetTasksResponse, TaskMutationResponse, AddTask } from "@/types/tasks.d";
+import type {
+  GetTasksResponse,
+  TaskMutationResponse,
+  AddTask,
+  getTaskByIdResponse,
+  EditTask,
+} from "@/types/tasks.d";
 
 export const apiSlice = createApi({
   reducerPath: "api",
@@ -68,13 +74,6 @@ export const apiSlice = createApi({
         body: { workspaceId },
       }),
       invalidatesTags: ["Workspace"],
-    }),
-    deleteTask: builder.mutation<WorkspaceMutationResponse, number>({
-      query: (workspaceId) => ({
-        url: `deleteWorkspace.php?workspaceId=${workspaceId}`,
-        method: "DELETE",
-        body: { workspaceId },
-      }),
     }),
     registerUser: builder.mutation<RegistrationResponse, RegisterUser>({
       query: (user) => {
@@ -178,23 +177,46 @@ export const apiSlice = createApi({
     getMembers: builder.query<GetMembersResponse, string>({
       query: (workspaceId) => ({
         url: `getMembers.php?workspaceId=${workspaceId}`,
-        method: 'GET'
-      })  
+        method: "GET",
+      }),
     }),
     getTasks: builder.query<GetTasksResponse, string>({
       query: (workspaceId) => ({
         url: `getTasks.php?workspaceId=${workspaceId}`,
         method: "GET",
       }),
-      providesTags: ['Task'],
+      providesTags: ["Task"],
     }),
     addTask: builder.mutation<TaskMutationResponse, AddTask>({
       query: (task) => ({
-        url: 'addTask.php',
-        method: 'POST',
-        body: task
+        url: "addTask.php",
+        method: "POST",
+        body: task,
       }),
-      invalidatesTags: ['Task']
+      invalidatesTags: ["Task"],
+    }),
+    getTaskById: builder.query<getTaskByIdResponse, string>({
+      query: (taskId) => ({
+        url: `getTaskById.php?taskId=${taskId}`,
+        method: "GET",
+      }),
+      providesTags: ["Task"],
+    }),
+    editTask: builder.mutation<TaskMutationResponse, EditTask>({
+      query: (task) => ({
+        url: "editTask.php",
+        method: "POST",
+        body: task,
+      }),
+      invalidatesTags: ["Task"],
+    }),
+    deleteTask: builder.mutation<TaskMutationResponse, string>({
+      query:(taskId) => ({
+        url: 'deleteTask.php',
+        method: 'DELETE',
+        body: { taskId }
+      }),
+      invalidatesTags: ["Task"],
     }),
   }),
 });
@@ -205,7 +227,6 @@ export const {
   useAddWorkspaceMutation,
   useEditWorkspaceMutation,
   useDeleteWorkspaceMutation,
-  useDeleteTaskMutation,
   useRegisterUserMutation,
   useLoginUserMutation,
   useCheckSessionQuery,
@@ -221,4 +242,7 @@ export const {
   useGetMembersQuery,
   useGetTasksQuery,
   useAddTaskMutation,
+  useGetTaskByIdQuery,
+  useEditTaskMutation,
+  useDeleteTaskMutation,
 } = apiSlice;

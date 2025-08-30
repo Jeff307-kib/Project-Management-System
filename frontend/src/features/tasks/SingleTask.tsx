@@ -20,6 +20,9 @@ import { Calendar } from "@/components/ui/calendar";
 import { Separator } from "@/components/ui/separator";
 import { ArrowLeft } from "lucide-react";
 import { MoreVertical } from "lucide-react";
+
+import { useGetTaskByIdQuery } from "@/api/apiSlice";
+import TaskModal from "@/features/tasks/TaskModal";
 import DeleteButton from "@/features/utils/DeleteButton";
 import EditButton from "@/features/utils/EditButton";
 
@@ -29,6 +32,15 @@ const SingleTask = () => {
   const backendURL = "http://localhost/projectManagementSystem/backend/public";
 
   const { taskId = '' } = useParams()
+  const {
+    data, 
+    isLoading,
+    isSuccess,
+    isError,
+    error,
+  } = useGetTaskByIdQuery(taskId)
+  console.log("Single Task Data: ", data?.data)
+  const [open, setOpen] = useState(false)
 
   const [task, setTask] = useState({
     id: "task-001",
@@ -86,11 +98,12 @@ const SingleTask = () => {
   };
 
   const handleEdit = () => {
-    alert("Hello Guys!")
+    setOpen(!open)
   }
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-gray-50">
+      <TaskModal label="Edit" taskOpen={open} setTaskOpen={handleEdit} task={data?.data}/>
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-6 bg-white shadow">
         <div className="flex flex-row items-center gap-3">

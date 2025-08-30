@@ -1,10 +1,12 @@
 <?php
 include_once '../config/db.php';
 
-class Task {
+class Task
+{
     private $conn, $stmt;
 
-    public function fetchTasks($workspaceId) {
+    public function fetchTasks($workspaceId)
+    {
         $this->conn = Connection::connect();
         $sql = "SELECT * FROM tasks WHERE workspace_id = :wid";
         $this->stmt = $this->conn->prepare($sql);
@@ -19,17 +21,18 @@ class Task {
         return [];
     }
 
-    public function checkDuplicate($title, $workspaceId, $taskId = null) {
+    public function checkDuplicate($title, $workspaceId, $taskId = null)
+    {
         $this->conn = Connection::connect();
 
         $sql = "SELECT * FROM tasks WHERE title = :tt AND workspace_id = :wid";
-        
+
         $params = [
             ":tt" => $title,
             ":wid" => $workspaceId,
         ];
 
-        if($taskId !== null) {
+        if ($taskId !== null) {
             $sql .= " AND id != :ti";
             $params[':ti'] = $taskId;
         }
@@ -39,7 +42,8 @@ class Task {
         return $this->stmt->rowCount() > 0;
     }
 
-    public function insertTask($title, $description, $status, $dueDate, $priorityLevel, $creatorId, $workspaceId) {
+    public function insertTask($title, $description, $status, $dueDate, $priorityLevel, $creatorId, $workspaceId)
+    {
         $this->conn = Connection::connect();
 
         $sql = "
@@ -64,7 +68,8 @@ class Task {
         return false;
     }
 
-    public function insertTaskAssignees($taskId, $userId) {
+    public function insertTaskAssignees($taskId, $userId)
+    {
         $this->conn = Connection::connect();
 
         $sql = "INSERT INTO task_assignees  (task_id, user_id) VALUES (:ti, :ui)";
@@ -79,7 +84,8 @@ class Task {
         return false;
     }
 
-    public function fetchTaskAssignees($taskId) {
+    public function fetchTaskAssignees($taskId)
+    {
         $this->conn = Connection::connect();
 
         $sql = "SELECT user_id FROM task_assignees WHERE task_id = :ti";
@@ -93,5 +99,66 @@ class Task {
         }
 
         return [];
+    }
+
+    public function fetchTaskById($taskId)
+    {
+        $this->conn = Connection::connect();
+
+        $sql = "SELECT * FROM tasks WHERE id = :ti";
+        $this->stmt = $this->conn->prepare($sql);
+        $this->stmt->bindParam(":ti", $taskId);
+        $this->stmt->execute();
+        $row = $this->stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($row) {
+            return $row;
+        }
+
+        return false;
+    }
+
+    public function updateTask($title, $description, $dueDate, $priorityLevel, $taskId)
+    {
+        $this->conn = Connection::connect();
+
+        $sql = "UPDATE tasks SET title = :tt, description = :de, due_date = :dd, updated_at = NOW(), priority_level = :pl WHERE id = :ti";
+        $this->stmt = $this->conn->prepare($sql);
+        $this->stmt->bindParam(":tt", $title);
+        $this->stmt->bindParam(":de", $description);
+        $this->stmt->bindParam(":dd", $dueDate);
+        $this->stmt->bindParam(":pl", $priorityLevel);
+        $this->stmt->bindParam(":ti", $taskId);
+
+        if ($this->stmt->execute()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function dropTask($taskId)
+    {
+        $this->conn = Connection::connect();
+
+        try {
+            $this->conn->beginTransaction();
+
+            $sql = "DELETE FROM task_assignees WHERE task_id = :ti";
+            $this->stmt = $this->conn->prepare($sql);
+            $this->stmt->bindParam(":ti", $taskId);
+            $this->stmt->execute();
+
+            $sql2 = "DELETE FROM tasks WHERE id = :ti";
+            $stmt2 = $this->conn->prepare($sql2);
+            $stmt2->bindParam(":ti", $taskId);
+            $stmt2->execute();            
+
+            $this->conn->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->conn->rollBack();
+            return false;
+        }
     }
 }

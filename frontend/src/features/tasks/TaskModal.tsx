@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
 import { format, isPast, isSameDay } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
@@ -35,17 +35,22 @@ import type { RootState } from "@/app/store";
 import type { TaskModalProps } from "@/types/tasks.d";
 import { useAddTaskMutation } from "@/api/apiSlice";
 import { useGetMembersQuery } from "@/api/apiSlice";
+import { useEditTaskMutation } from "@/api/apiSlice";
 import { SuccessToast } from "@/features/utils/SuccessToast";
 
-const TaskModal = ({ label, taskOpen, setTaskOpen }: TaskModalProps) => {
+const TaskModal = ({ label, taskOpen, setTaskOpen, task }: TaskModalProps) => {
   const navigate = useNavigate();
-  const { workspaceId = "" } = useParams();
+  const { workspaceId = "", taskId = "" } = useParams();
 
   if (!workspaceId) {
     navigate("/workspace");
   }
 
+  console.log("Taskid", taskId)
+
   const userId = useSelector((state: RootState) => state.auth.user?.id) ?? "";
+
+  const isEdit = !!task;
 
   const [dueDate, setDueDate] = useState<Date | undefined>();
   const [title, setTitle] = useState("");
@@ -54,7 +59,21 @@ const TaskModal = ({ label, taskOpen, setTaskOpen }: TaskModalProps) => {
   const [formError, setFormError] = useState("");
   const [assignedMembers, setAssignedMembers] = useState<string[]>([]);
 
-  const [addTask, { isLoading }] = useAddTaskMutation();
+  const [addTask, { isLoading: addTaskLoading }] = useAddTaskMutation();
+  const [editTask, { isLoading: editTaskLoading }] = useEditTaskMutation();
+
+  useEffect(() => {
+    if (task && task.members) {
+      setTitle(task.title);
+      setDescription(task.description);
+      setPriority(task.priority_level);
+      const memberIds = task.members.map((member) => member.id);
+      setAssignedMembers(memberIds);
+      const due_date = new Date(task.due_date);
+      setDueDate(due_date);
+      setFormError("");
+    }
+  }, [task, taskOpen]);
 
   const handleAdd = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -83,23 +102,35 @@ const TaskModal = ({ label, taskOpen, setTaskOpen }: TaskModalProps) => {
     const formattedDate = format(dueDate, "yyyy-MM-dd");
 
     try {
-      await addTask({
-        title: title,
-        description: description,
-        dueDate: formattedDate,
-        priorityLevel: priority,
-        userId: userId,
-        workspaceId: workspaceId,
-        members: assignedMembers,
-      }).unwrap();
-      SuccessToast("New Task Added");
+      if (isEdit) {
+        await editTask({
+          taskId: taskId,
+          title: title,
+          description: description,
+          priorityLevel: priority,
+          dueDate: formattedDate,
+          members: assignedMembers,
+        }).unwrap();
+        SuccessToast("Task Updated");
+      } else {
+        await addTask({
+          title: title,
+          description: description,
+          dueDate: formattedDate,
+          priorityLevel: priority,
+          userId: userId,
+          workspaceId: workspaceId,
+          members: assignedMembers,
+        }).unwrap();
+        SuccessToast("New Task Added");
+      }
       setTitle("");
       setDescription("");
       setPriority("");
       setFormError("");
       setTaskOpen();
       setDueDate(undefined);
-      setAssignedMembers([])
+      setAssignedMembers([]);
     } catch (err) {
       if (err && typeof err === "object" && "data" in err) {
         const typedErr = err as { data?: { error?: string } };
@@ -107,10 +138,9 @@ const TaskModal = ({ label, taskOpen, setTaskOpen }: TaskModalProps) => {
       } else {
         setFormError("Something went wrong!");
       }
-      console.log(err)
+      console.log(err);
     }
-    // console.log("assigned members", assignedMembers)
-  }
+  };
 
   const { data: members } = useGetMembersQuery(workspaceId);
 
@@ -222,9 +252,9 @@ const TaskModal = ({ label, taskOpen, setTaskOpen }: TaskModalProps) => {
           <button
             type="submit"
             className="bg-primary text-white px-4 py-2 rounded cursor-pointer"
-            disabled={isLoading}
+            disabled={addTaskLoading || editTaskLoading}
           >
-            {isLoading ? "Adding" : "Add Task"}
+            {label}
           </button>
         </form>
       </DialogContent>

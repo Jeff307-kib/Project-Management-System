@@ -30,7 +30,7 @@ class taskController
             $tasks = $this->task->fetchTasks($workspaceId);
 
             if (!empty($tasks)) {
-                foreach($tasks as $key => $task) {
+                foreach ($tasks as $key => $task) {
                     $taskId = $task['id'];
                     $memberDetails = [];
                     $memberDetails = $this->getTaskAssigneesDetails($taskId);
@@ -58,11 +58,12 @@ class taskController
         }
     }
 
-    function addTask() {
-        $data = json_decode(file_get_contents("php://input"),true);
+    function addTask()
+    {
+        $data = json_decode(file_get_contents("php://input"), true);
 
         try {
-            if(empty($data['title']) || empty($data['dueDate']) || empty($data['priorityLevel'])) {
+            if (empty($data['title']) || empty($data['dueDate']) || empty($data['priorityLevel'])) {
                 http_response_code(400);
                 echo json_encode(['error' => 'Please enter all required fields.']);
                 return;
@@ -82,7 +83,7 @@ class taskController
             $dueDate = $data['dueDate'];
             $priorityLevel = $data['priorityLevel'];
 
-            if ($this->task->checkDuplicate($title,$workspaceId)) {
+            if ($this->task->checkDuplicate($title, $workspaceId)) {
                 http_response_code(409);
                 echo json_encode(['error' => "A Task with this name is already exists!"]);
                 return;
@@ -91,7 +92,7 @@ class taskController
             $taskId = $this->task->insertTask($title, $description, $status, $dueDate, $priorityLevel, $creatorId, $workspaceId);
 
             if (isset($data['members'])) {
-                foreach($data['members'] as $memberId) {
+                foreach ($data['members'] as $memberId) {
                     $this->task->insertTaskAssignees($taskId, $memberId);
                 }
             }
@@ -105,7 +106,8 @@ class taskController
         }
     }
 
-    function getTaskAssigneesDetails($taskId) {
+    function getTaskAssigneesDetails($taskId)
+    {
         $membersDetails = array();
         $members = $this->task->fetchTaskAssignees($taskId);
         foreach ($members as $member) {
@@ -113,5 +115,92 @@ class taskController
             array_push($membersDetails, $singleMemberDetail);
         }
         return $membersDetails;
+    }
+
+    function getTaskById()
+    {
+        $taskId = $_GET['taskId'];
+
+        if (empty($taskId)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Missing Task Id!']);
+            return;
+        }
+
+        try {
+            $task = $this->task->fetchTaskById($taskId);
+            $taskAssignees = $this->getTaskAssigneesDetails($taskId);
+            $task['members'] = $taskAssignees;
+
+            if ($task) {
+                echo json_encode([
+                    'success' => true,
+                    'message' => "Task fetched successfully!",
+                    'data' => $task,
+                ]);
+            }
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Unexpected Error occured: ' . $e->getMessage()]);
+        }
+    }
+
+    function editTask()
+    {
+        $data = json_decode(file_get_contents("php://input"), true);
+
+        if (empty($data['taskId']) || empty($data['title']) || empty($data['priorityLevel']) || empty($data['dueDate'])) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Missing required fields or missing task id.']);
+            return;
+        }
+
+        $taskId = $data['taskId'];
+        $title = trim($data['title']);
+        $description = isset($data['description']) ? trim($data['description']) : null;
+        $priorityLevel = $data['priorityLevel'];
+        $dueDate = $data['dueDate'];
+        $members = isset($data['members']) ? $data['members'] : [];
+
+        try {
+            $this->task->updateTask($title, $description, $dueDate, $priorityLevel, $taskId);
+
+            if (count($members) > 0) {
+                foreach ($members as $member) {
+                    $this->task->insertTaskAssignees($taskId, $member);
+                }
+            }
+            echo json_encode([
+                'success' => true,
+                'message' => 'Task Updated Successfully',
+            ]);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => "Unexpected error occured! " . $e->getMessage()]);
+        }
+    }
+
+    function deleteTask() {
+        $data = json_decode(file_get_contents("php://input"), true);
+
+        if (empty($data['taskId'])) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Missin task Id!']);
+            return;
+        }
+
+        try {
+            $taskId = $data['taskId'];
+
+            $this->task->dropTask($taskId);
+
+            echo json_encode([
+                'success' => true,
+                'message' => 'Task Deleted Successfully!',
+            ]);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Unexpected error occured! ' . $e->getMessage()]);
+        }
     }
 }

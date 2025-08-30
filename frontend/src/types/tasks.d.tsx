@@ -43,3 +43,18 @@ export interface TaskAssignee {
   email: string,
   profile_url: string, 
 }
+
+export interface getTaskByIdResponse {
+  success: boolean,
+  message: string,
+  data: Task,
+}
+
+export interface EditTask {
+  taskId: string,
+  title: string, 
+  description: string,
+  priorityLevel: string,
+  dueDate: string,
+  members: string[],
+}

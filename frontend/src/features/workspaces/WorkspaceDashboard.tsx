@@ -46,6 +46,7 @@ const WorkspaceDashboard = () => {
   // console.log(workspaceId);
   const { data, isLoading, isError, error, isSuccess } =
     useGetWorkspaceByIdQuery(workspaceIdNumber);
+    console.log("Workspace: ", data)
 
   const [isOpen, setIsOpen] = useState(false);
   const label = "Update";
