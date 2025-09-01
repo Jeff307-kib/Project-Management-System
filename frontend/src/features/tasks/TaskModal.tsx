@@ -93,6 +93,11 @@ const TaskModal = ({ label, taskOpen, setTaskOpen, task }: TaskModalProps) => {
       return;
     }
 
+    if (assignedMembers.length < 1) {
+      setFormError("Please assign at least one member!");
+      return;
+    }
+
     const now = new Date();
     if (isPast(dueDate) || isSameDay(dueDate, now)) {
       setFormError("Please set a date onwards today!");

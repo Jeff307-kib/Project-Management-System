@@ -23,7 +23,11 @@ import InviteMemberModal from "@/features/users/InviteMemberModal";
 import { useGetMembersQuery } from "@/api/apiSlice";
 import { useParams } from "react-router-dom";
 
-const MembersTab = () => {
+type Props = {
+  role:string
+}
+
+const MembersTab = ({role}: Props) => {
   const { workspaceId = "" } = useParams();
   const backendURL = "http://localhost/projectManagementSystem/backend/public";
   const [isOpen, setIsOpen] = useState(false);
@@ -114,7 +118,11 @@ const MembersTab = () => {
               Collaborate with your team
             </CardDescription>
           </div>
-          <AddButton label="Invite Member" onClick={handleOpen} />
+          {
+            role === 'admin' && (
+              <AddButton label="Invite Member" onClick={handleOpen} />
+            )
+          }
         </CardHeader>
         <CardContent>
           <Table>

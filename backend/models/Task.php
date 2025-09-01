@@ -122,13 +122,36 @@ class Task
     {
         $this->conn = Connection::connect();
 
-        $sql = "UPDATE tasks SET title = :tt, description = :de, due_date = :dd, updated_at = NOW(), priority_level = :pl WHERE id = :ti";
-        $this->stmt = $this->conn->prepare($sql);
-        $this->stmt->bindParam(":tt", $title);
-        $this->stmt->bindParam(":de", $description);
-        $this->stmt->bindParam(":dd", $dueDate);
-        $this->stmt->bindParam(":pl", $priorityLevel);
-        $this->stmt->bindParam(":ti", $taskId);
+        try {
+            $this->conn->beginTransaction();
+
+            $sql = "DELETE FROM task_assignees WHERE task_id = :ti";
+            $this->stmt = $this->conn->prepare($sql);
+            $this->stmt->bindParam(":ti", $taskId);
+            $this->stmt->execute();
+
+            $sql2 = "UPDATE tasks SET title = :tt, description = :de, due_date = :dd, updated_at = NOW(), priority_level = :pl WHERE id = :ti";
+            $stmt2 = $this->conn->prepare($sql2);
+            $stmt2->bindParam(":tt", $title);
+            $stmt2->bindParam(":de", $description);
+            $stmt2->bindParam(":dd", $dueDate);
+            $stmt2->bindParam(":pl", $priorityLevel);
+            $stmt2->bindParam(":ti", $taskId);
+            $stmt2->execute();
+            
+            $this->conn->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->conn->rollBack();
+            return false;
+        }
+        // $sql = "UPDATE tasks SET title = :tt, description = :de, due_date = :dd, updated_at = NOW(), priority_level = :pl WHERE id = :ti";
+        // $this->stmt = $this->conn->prepare($sql);
+        // $this->stmt->bindParam(":tt", $title);
+        // $this->stmt->bindParam(":de", $description);
+        // $this->stmt->bindParam(":dd", $dueDate);
+        // $this->stmt->bindParam(":pl", $priorityLevel);
+        // $this->stmt->bindParam(":ti", $taskId);
 
         if ($this->stmt->execute()) {
             return true;
@@ -152,7 +175,7 @@ class Task
             $sql2 = "DELETE FROM tasks WHERE id = :ti";
             $stmt2 = $this->conn->prepare($sql2);
             $stmt2->bindParam(":ti", $taskId);
-            $stmt2->execute();            
+            $stmt2->execute();
 
             $this->conn->commit();
             return true;

@@ -52,7 +52,7 @@ const App = () => {
                 <Route path="tasks">
                   <Route path=":taskId" element={<SingleTask />} />
                 </Route>
-              </Route>
+              </Route>  
             </Route>
             <Route path="user">
               <Route index element={<UserProfile />} />

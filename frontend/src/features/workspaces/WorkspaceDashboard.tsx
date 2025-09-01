@@ -23,6 +23,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import AddButton from "@/features/utils/AddButton";
 import SearchBox from "@/features/utils/SearchBox";
@@ -46,7 +47,9 @@ const WorkspaceDashboard = () => {
   // console.log(workspaceId);
   const { data, isLoading, isError, error, isSuccess } =
     useGetWorkspaceByIdQuery(workspaceIdNumber);
-    console.log("Workspace: ", data)
+  console.log("Workspace user role: ", data?.data.role);
+
+  const role = data?.data.role ? data?.data.role : "";
 
   const [isOpen, setIsOpen] = useState(false);
   const label = "Update";
@@ -70,11 +73,18 @@ const WorkspaceDashboard = () => {
   };
 
   const name = data?.data?.name;
-  const workspaceName = name && name.length > 45 ? name.substring(0, 45) + "..." : name;
+  const workspaceName =
+    name && name.length > 45 ? name.substring(0, 45) + "..." : name;
 
   let content;
   if (isLoading) {
-    content = <p>Loading...</p>;
+    content = (
+      <div className="grid gap-6 max-w-[1200px] grid-cols-[repeat(auto-fit,minmax(250px,1fr))]">
+        <Skeleton className="w-full h-32" />
+        <Skeleton className="w-full h-32" />
+        <Skeleton className="w-full h-32" />
+      </div>
+    );
   } else if (isSuccess) {
     content = (
       <Tabs defaultValue="tasks">
@@ -109,25 +119,27 @@ const WorkspaceDashboard = () => {
               <TabsTrigger value="members">Members</TabsTrigger>
               <TabsTrigger value="report">Report</TabsTrigger>
             </TabsList>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <MoreVertical />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-48 p-2 flex flex-col gap-2">
-                <AddButton label="Task" onClick={handleAddTask} />
-                <EditButton label="Workspace" onClick={handleAdd} />
-                <DeleteButton label="Workspace" id={workspaceIdNumber} />
-              </PopoverContent>
-            </Popover>
+            {role === "admin" && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <MoreVertical />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-48 p-2 flex flex-col gap-2">
+                  <AddButton label="Task" onClick={handleAddTask} />
+                  <EditButton label="Workspace" onClick={handleAdd} />
+                  <DeleteButton label="Workspace" id={workspaceIdNumber} />
+                </PopoverContent>
+              </Popover>
+            )}
           </div>
         )}
         <TabsContent value="tasks">
-          {taskId ? <Outlet /> : <TasksTap />}
+          {taskId ? <Outlet context={{role}}/> : <TasksTap />}
         </TabsContent>
         <TabsContent value="members">
-          <MembersTab />
+          <MembersTab role={role} />
         </TabsContent>
 
         <TabsContent value="report">

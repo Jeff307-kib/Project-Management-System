@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Separator } from "@/components/ui/separator";
@@ -25,68 +26,28 @@ import { useGetTaskByIdQuery } from "@/api/apiSlice";
 import TaskModal from "@/features/tasks/TaskModal";
 import DeleteButton from "@/features/utils/DeleteButton";
 import EditButton from "@/features/utils/EditButton";
+import type { RootState } from "@/app/store";
+import { useSelector } from "react-redux";
 
+type OutletContextType = {
+  role: string;
+};
 
 const SingleTask = () => {
   const navigate = useNavigate();
   const backendURL = "http://localhost/projectManagementSystem/backend/public";
+  const { role } = useOutletContext<OutletContextType>();
+  const { user } = useSelector((state: RootState) => state.auth);
+  const userId = user?.id
+  const { taskId = "" } = useParams();
+  const { data, isLoading, isSuccess, isError, error } =
+    useGetTaskByIdQuery(taskId);
 
-  const { taskId = '' } = useParams()
-  const {
-    data, 
-    isLoading,
-    isSuccess,
-    isError,
-    error,
-  } = useGetTaskByIdQuery(taskId)
-  console.log("Single Task Data: ", data?.data)
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(false);
 
-  const [task, setTask] = useState({
-    id: "task-001",
-    title: "Design and Implement Single Task Page",
-    description:
-      "Create a comprehensive layout for the single task page including task details, attachments, comments, and a 'Start Task' button.",
-    status: "Not Started",
-    priority: "High",
-    dueDate: "2025-09-10T12:00:00Z",
-    assignees: [
-      {
-        username: "Jane Doe",
-        email: "jane@example.com",
-        profile_url: "avatar.jpg",
-      },
-      {
-        username: "John Smith",
-        email: "john@example.com",
-        profile_url: "avatar2.jpg",
-      },
-      {
-        username: "Alice Lee",
-        email: "alice@example.com",
-        profile_url: "avatar3.jpg",
-      },
-    ],
-    attachments: [
-      { name: "task-specs.pdf", size: "1.2 MB", url: "#" },
-      { name: "wireframes.zip", size: "5.5 MB", url: "#" },
-    ],
-    comments: [
-      {
-        author: "John Doe",
-        comment: "Looking good! Let’s sync up on the due date.",
-        timestamp: "2025-08-28T10:00:00Z",
-        username: "John Doe",
-        profile_url: "avatar2.jpg",
-      },
-    ],
-  });
+  const isMember = data?.data.members.some((member) => member.id === userId);
 
-  const [newComment, setNewComment] = useState("");
-
-  const handleStartTask = () => setTask({ ...task, status: "In Progress" });
-
-  const getStatusClasses = (status: string) => {
+  const getStatusClasses = (status: string | undefined) => {
     switch (status) {
       case "In Progress":
         return "bg-blue-100 text-blue-800";
@@ -98,12 +59,128 @@ const SingleTask = () => {
   };
 
   const handleEdit = () => {
-    setOpen(!open)
-  }
+    setOpen(!open);
+  };
 
-  return (
-    <div className="flex min-h-screen w-full flex-col bg-gray-50">
-      <TaskModal label="Edit" taskOpen={open} setTaskOpen={handleEdit} task={data?.data}/>
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen w-full flex-col bg-gray-50 p-6 gap-6">
+        {/* Header Skeleton */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-6 bg-white shadow rounded-lg animate-pulse">
+          <div className="flex flex-row items-center gap-3">
+            <Skeleton className="h-8 w-8 rounded-full" />
+            <Skeleton className="h-8 w-64 rounded" />
+            <Skeleton className="h-6 w-24 rounded-full" />
+            <Skeleton className="h-6 w-24 rounded-full" />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Skeleton className="h-10 w-32 rounded" />
+            <Skeleton className="h-10 w-10 rounded" />
+          </div>
+        </div>
+        
+        {/* Main Grid Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Left Column Skeletons */}
+          <div className="md:col-span-2 flex flex-col gap-6">
+            <Card className="animate-pulse">
+              <CardHeader>
+                <CardTitle><Skeleton className="h-6 w-24" /></CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6" />
+                <Separator />
+                <div className="flex flex-wrap gap-4">
+                  <Skeleton className="h-4 w-28" />
+                  <Skeleton className="h-4 w-28" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="animate-pulse">
+              <CardHeader className="flex items-center justify-between">
+                <CardTitle><Skeleton className="h-6 w-28" /></CardTitle>
+                <Skeleton className="h-8 w-32" />
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-2/3" />
+              </CardContent>
+            </Card>
+
+            <Card className="flex flex-col h-full animate-pulse">
+              <CardHeader>
+                <CardTitle><Skeleton className="h-6 w-28" /></CardTitle>
+              </CardHeader>
+              <CardContent className="flex-grow overflow-y-auto space-y-4">
+                <div className="flex gap-3 items-center">
+                  <Skeleton className="h-10 w-10 rounded-full" />
+                  <div className="flex flex-col gap-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-4 w-48" />
+                  </div>
+                </div>
+                <div className="flex gap-3 items-center">
+                  <Skeleton className="h-10 w-10 rounded-full" />
+                  <div className="flex flex-col gap-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-4 w-48" />
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                <Skeleton className="flex-grow h-10 w-full" />
+                <Skeleton className="w-full sm:w-20 h-10" />
+              </CardFooter>
+            </Card>
+          </div>
+
+          {/* Right Column Skeletons */}
+          <div className="md:col-span-1 flex flex-col gap-6">
+            <Card className="animate-pulse">
+              <CardHeader>
+                <CardTitle><Skeleton className="h-6 w-32" /></CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-64 w-full" />
+              </CardContent>
+            </Card>
+
+            <Card className="animate-pulse">
+              <CardHeader>
+                <CardTitle><Skeleton className="h-6 w-32" /></CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-3">
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-10 w-10 rounded-full" />
+                  <div className="flex flex-col gap-2">
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-4 w-32" />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-10 w-10 rounded-full" />
+                  <div className="flex flex-col gap-2">
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-4 w-32" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    )
+  } else if (isSuccess) {
+    return (
+      <div className="flex min-h-screen w-full flex-col bg-gray-50">
+      <TaskModal
+        label="Edit"
+        taskOpen={open}
+        setTaskOpen={handleEdit}
+        task={data?.data}
+      />
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-6 bg-white shadow">
         <div className="flex flex-row items-center gap-3">
@@ -116,34 +193,39 @@ const SingleTask = () => {
             <ArrowLeft className="h-4 w-4" />
             <span>Go Back</span>
           </Button>
-          <h1 className="text-3xl font-bold text-gray-900">{task.title}</h1>
-          <Badge className={`px-3 py-1 ${getStatusClasses(task.status)}`}>
-            {task.status}
+          <h1 className="text-3xl font-bold text-gray-900">
+            {data?.data.title}
+          </h1>
+          <Badge className={`px-3 py-1 ${getStatusClasses(data?.data.status)}`}>
+            {data?.data.status}
           </Badge>
           <Badge className="px-3 py-1 bg-red-100 text-red-800">
-            {task.priority}
+            {data?.data.priority_level}
           </Badge>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            onClick={handleStartTask}
-            className="bg-green-600 hover:bg-green-700"
-          >
-            Start Task
-          </Button>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <MoreVertical />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-48 p-2 flex flex-col gap-2">
-              <EditButton label="Task" onClick={handleEdit}/>
-              <DeleteButton label="Task" id={Number(taskId)}/>
-              <Button variant="default">Mark Complete</Button>
-            </PopoverContent>
-          </Popover>
-        </div>
+        {isMember && (
+          <div className="flex flex-wrap gap-2">
+            <Button className="bg-green-600 hover:bg-green-700">
+              Start Task
+            </Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <MoreVertical />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-48 p-2 flex flex-col gap-2">
+                {role === "admin" && (
+                  <>
+                    <EditButton label="Task" onClick={handleEdit} />
+                    <DeleteButton label="Task" id={Number(taskId)} />
+                  </>
+                )}
+                <Button variant="default">Mark Complete</Button>
+              </PopoverContent>
+            </Popover>
+          </div>
+        )}
       </div>
 
       {/* Main Grid */}
@@ -156,16 +238,18 @@ const SingleTask = () => {
               <CardTitle>Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-gray-700">{task.description}</p>
+              <p className="text-gray-700">{data?.data.description}</p>
               <Separator />
               <div className="flex flex-wrap gap-4 text-sm text-gray-700">
                 <div className="flex items-center gap-2">
                   <span className="font-medium">Due:</span>
-                  <span>{new Date(task.dueDate).toLocaleDateString()}</span>
+                  <span>
+                    {new Date(data?.data.due_date ?? "").toLocaleDateString()}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="font-medium">Priority:</span>
-                  <span>{task.priority}</span>
+                  <span>{data?.data.priority_level}</span>
                 </div>
               </div>
             </CardContent>
@@ -175,23 +259,23 @@ const SingleTask = () => {
           <Card>
             <CardHeader className="flex items-center justify-between">
               <CardTitle>Attachments</CardTitle>
-              <Button size="sm" variant="outline">
-                Add Attachment
-              </Button>
+              {isMember && (
+                <Button size="sm" variant="outline">
+                  Add Attachment
+                </Button>
+              )}
             </CardHeader>
             <CardContent>
               <ul className="list-disc ml-5 space-y-2">
-                {task.attachments.map((file, i) => (
-                  <li key={i}>
-                    <a
-                      href={file.url}
-                      className="text-blue-600 hover:underline font-medium"
-                    >
-                      {file.name}
-                    </a>{" "}
-                    <span className="text-gray-500 text-sm">({file.size})</span>
-                  </li>
-                ))}
+                <li key="1">
+                  <a
+                    href="#"
+                    className="text-blue-600 hover:underline font-medium"
+                  >
+                    Attachment File
+                  </a>{" "}
+                  <span className="text-gray-500 text-sm">1.2 MB</span>
+                </li>
               </ul>
             </CardContent>
           </Card>
@@ -202,38 +286,56 @@ const SingleTask = () => {
               <CardTitle>Comments</CardTitle>
             </CardHeader>
             <CardContent className="flex-grow overflow-y-auto space-y-4">
-              {task.comments.map((c, i) => (
-                <div key={i} className="flex gap-3">
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage
-                      src={`${backendURL}/${c.profile_url}`}
-                      alt={c.username}
-                    />
-                    <AvatarFallback>
-                      {c.username.slice(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex flex-col">
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="font-semibold">{c.author}</span>
-                      <span className="text-gray-400 text-xs">
-                        {new Date(c.timestamp).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <p className="text-gray-700 text-sm">{c.comment}</p>
+              <div key="1" className="flex gap-3">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage
+                    src="https://github.com/shadcn.png"
+                    alt="@shadcn"
+                  />
+                  <AvatarFallback>CN</AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="font-semibold">Shad Cn</span>
+                    <span className="text-gray-400 text-xs">
+                      {new Date().toLocaleDateString()}
+                    </span>
                   </div>
+                  <p className="text-gray-700 text-sm">
+                    "Looking good! Let’s sync up on the due date."
+                  </p>
                 </div>
-              ))}
+              </div>
+              <div key="2" className="flex gap-3">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage
+                    src="https://github.com/shadcn.png"
+                    alt="@shadcn"
+                  />
+                  <AvatarFallback>CN</AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="font-semibold">Shad Cn</span>
+                    <span className="text-gray-400 text-xs">
+                      {new Date().toLocaleDateString()}
+                    </span>
+                  </div>
+                  <p className="text-gray-700 text-sm">
+                    "Looking good! Let’s sync up on the due date."
+                  </p>
+                </div>
+              </div>
             </CardContent>
-            <CardFooter className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-              <Textarea
-                placeholder="Add a comment..."
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                className="flex-grow"
-              />
-              <Button className="w-full sm:w-auto mt-2 sm:mt-0">Post</Button>
-            </CardFooter>
+            {isMember && (
+              <CardFooter className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                <Textarea
+                  placeholder="Add a comment..."
+                  className="flex-grow"
+                />
+                <Button className="w-full sm:w-auto mt-2 sm:mt-0">Post</Button>
+              </CardFooter>
+            )}
           </Card>
         </div>
 
@@ -245,11 +347,7 @@ const SingleTask = () => {
               <CardTitle>Task Calendar</CardTitle>
             </CardHeader>
             <CardContent>
-              <Calendar
-                mode="single"
-                selected={new Date(task.dueDate)}
-                className="w-full"
-              />
+              <Calendar mode="single" className="w-full" />
             </CardContent>
           </Card>
 
@@ -259,8 +357,8 @@ const SingleTask = () => {
               <CardTitle>Assigned Members</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
-              {task.assignees.map((member, idx) => (
-                <div key={idx} className="flex items-center gap-2">
+              {data?.data.members.map((member) => (
+                <div key={member.id} className="flex items-center gap-2">
                   <Avatar className="h-10 w-10">
                     <AvatarImage
                       src={`${backendURL}/${member.profile_url}`}
@@ -278,12 +376,24 @@ const SingleTask = () => {
                   </div>
                 </div>
               ))}
+              {data?.data.members.length == 0 && <div>No assigned members</div>}
             </CardContent>
           </Card>
         </div>
       </div>
     </div>
-  );
+    )
+  } else if (isError) {
+    if ("status" in error) {
+      if (error.status == "CUSTOM_ERROR") {
+        navigate("/registration");
+      }
+      return <p>Error: {error.status}</p>;
+    } else {
+      return <p>An unexpected error occurred.</p>;
+    }
+  }
+
 };
 
 export default SingleTask;
