@@ -28,6 +28,7 @@ import type {
   EditTask,
 } from "@/types/tasks.d";
 
+
 export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery: fetchBaseQuery({
@@ -218,6 +219,22 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ["Task"],
     }),
+    startTask: builder.mutation<TaskMutationResponse, string>({
+      query: (taskId) => ({
+        url: 'startTask.php',
+        method: 'POST',
+        body: { taskId }
+      }),
+      invalidatesTags: ["Task"],
+    }),
+    AddAttachment: builder.mutation<TaskMutationResponse, FormData>({
+      query: (formData) => ({
+        url: 'addAttachment.php',
+        method: 'POST',
+        body: formData,
+      }),
+      invalidatesTags: ["Task"],
+    })
   }),
 });
 
@@ -245,4 +262,6 @@ export const {
   useGetTaskByIdQuery,
   useEditTaskMutation,
   useDeleteTaskMutation,
+  useStartTaskMutation,
+  useAddAttachmentMutation,
 } = apiSlice;

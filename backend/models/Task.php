@@ -184,4 +184,38 @@ class Task
             return false;
         }
     }
+
+    public function updateStatus($taskId, $status) {
+        $this->conn = Connection::connect();
+
+        $sql = "UPDATE tasks SET status = :st WHERE id = :ti";
+        $this->stmt = $this->conn->prepare($sql);
+        $this->stmt->bindParam(":st", $status);
+        $this->stmt->bindParam(":ti", $taskId);
+
+        if ($this->stmt->execute()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function insertAttachment($taskId, $userId, $fileName, $fileType, $fileSize, $filepath) {
+        $this->conn = Connection::connect();
+
+        $sql = "INSERT INTO attachments (task_id, uploaded_by, file_name, file_type, file_size, file_path, uploaded_at) VALUES (:ti, :ub, :fn, :ft, :fs, :fp, NOW())";
+        $this->stmt = $this->conn->prepare($sql);
+        $this->stmt->bindParam(":ti", $taskId);
+        $this->stmt->bindParam(":ub", $userId);
+        $this->stmt->bindParam(":fn", $fileName);
+        $this->stmt->bindParam(":ft", $fileType);
+        $this->stmt->bindParam(":fs", $fileSize);
+        $this->stmt->bindParam(":fp", $filepath);
+
+        if ($this->stmt->execute()) {
+            return true;
+        }
+
+        return false;
+    }
 }

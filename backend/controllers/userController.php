@@ -35,7 +35,7 @@ class UserController
             $profileImage = null;
 
             if (isset($_FILES['profileImage']) && $_FILES['profileImage']['error'] === 0) {
-                $uploadDir = __DIR__ . '/../public/uploads/profiles/'; // Correct absolute path
+                $uploadDir = __DIR__ . '/../public/uploads/profiles/';
                 $fileName = basename($_FILES['profileImage']['name']);
                 $fileTmpName = $_FILES['profileImage']['tmp_name'];
                 $fileSize = $_FILES['profileImage']['size'];

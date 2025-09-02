@@ -203,4 +203,87 @@ class taskController
             echo json_encode(['error' => 'Unexpected error occured! ' . $e->getMessage()]);
         }
     }
+
+    function startTask() {
+        $data = json_decode(file_get_contents("php://input"), true);
+
+        if (empty($data['taskId'])) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Missing Task Id.']);
+            return;
+        }
+
+        $taskId = $data['taskId'];
+
+        try {
+            $this->task->updateStatus($taskId, "In Progress");
+
+            echo json_encode([
+                'success' => true,
+                'message' => 'Task Status Updated Successfully!',
+            ]);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Unexpected error occured. ' . $e->getMessage()]);
+        }
+    }
+
+    function addAttachment() {
+        try {
+            if (empty($_POST['taskId']) || empty($_POST['userId'])) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Task Id or User Id Missing!']);
+                return;
+            }
+            
+            $taskId = $_POST['taskId'];
+            $userId = $_POST['userId'];
+
+            if (isset($_FILES['fileAttachment']) && $_FILES['fileAttachment']['error'] === 0) {
+                $uploadDir = __DIR__ . '/../public/uploads/attachments/';
+                $fileName = basename($_FILES['fileAttachment']['name']);
+                $fileTmpName = $_FILES['fileAttachment']['tmp_name'];
+                $fileSize = $_FILES['fileAttachment']['size'];
+
+                $maxFileSize = 15 * 1024 * 1024;
+
+                if ($fileSize > $maxFileSize) {
+                    http_response_code(413);
+                    echo json_encode(['error' => "File is too large. Maximum size is 15MB."]);
+                    return;
+                }
+
+                $fileExt = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+                $allowed = array('pdf', 'docx', 'xlsx', 'pptx', 'txt', 'jpg', 'jpeg', 'png', 'gif', 'svg', 'webp');
+
+                if (!in_array($fileExt, $allowed)) {
+                    http_response_code(400);
+                    echo json_encode(['error' => "Only 'pdf', 'docx', 'xlsx', 'pptx', 'txt', 'jpg', 'jpeg', 'png', 'gif', 'svg' and 'webp' files are allowed!"]);
+                    return;
+                }
+
+                $newFileName = uniqid("", true) . '.' . $fileExt;
+                $uploadFileDestination = $uploadDir . $newFileName;
+
+                if (!move_uploaded_file($fileTmpName, $uploadFileDestination)) {
+                    http_response_code(500);
+                    echo json_encode(['error' => "Error moving the file!"]);
+                    return;
+                }
+
+                $filePath = 'uploads/attachments/' . $newFileName;
+
+                $this->task->insertAttachment($taskId, $userId, $fileName, $fileExt, $fileSize, $filePath);
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Attachment Added Successfully',
+                ]);
+            }
+
+            
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Unexpected error occured.' . $e->getMessage() ]);
+        }
+    }
 }
