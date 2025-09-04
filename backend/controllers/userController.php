@@ -326,7 +326,7 @@ class UserController
                         $response = [
                             'status' => 'error',
                             'message' => 'Mailer failed to send email.',
-                            'details' => $mail->ErrorInfo // safe because json_encode will escape it
+                            'details' => $mail->ErrorInfo 
                         ];
                         echo json_encode($response);
                         exit;

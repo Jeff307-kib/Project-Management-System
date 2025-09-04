@@ -26,6 +26,7 @@ import type {
   AddTask,
   getTaskByIdResponse,
   EditTask,
+  AddComment,
 } from "@/types/tasks.d";
 
 
@@ -227,13 +228,21 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ["Task"],
     }),
-    AddAttachment: builder.mutation<TaskMutationResponse, FormData>({
+    addAttachment: builder.mutation<TaskMutationResponse, FormData>({
       query: (formData) => ({
         url: 'addAttachment.php',
         method: 'POST',
         body: formData,
       }),
       invalidatesTags: ["Task"],
+    }),
+    addComment: builder.mutation<TaskMutationResponse, AddComment>({
+      query: (comment) => ({
+        url: 'addComment.php',
+        method: 'POST',
+        body: comment,
+      }),
+      invalidatesTags: ['Task']
     })
   }),
 });
@@ -264,4 +273,5 @@ export const {
   useDeleteTaskMutation,
   useStartTaskMutation,
   useAddAttachmentMutation,
+  useAddCommentMutation,
 } = apiSlice;

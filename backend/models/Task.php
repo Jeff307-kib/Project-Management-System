@@ -218,4 +218,52 @@ class Task
 
         return false;
     }
+
+    public function fetchAttachment ($taskId) {
+        $this->conn = Connection::connect();
+
+        $sql = "SELECT * FROM attachments WHERE task_id = :ti";
+        $this->stmt = $this->conn->prepare($sql);
+        $this->stmt->bindParam(":ti", $taskId);
+        $this->stmt->execute();
+        $row = $this->stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if($row) {
+            return $row;
+        }
+
+        return [];
+    }
+
+    public function insertComment ($taskId, $userId, $commentText) {
+        $this->conn = Connection::connect();
+
+        $sql = "INSERT INTO comments (task_id, created_by, comment_text, created_at, updated_at) VALUES (:ti, :cb, :ct, NOW(), NOW())";
+        $this->stmt = $this->conn->prepare($sql);
+        $this->stmt->bindParam(":ti", $taskId);
+        $this->stmt->bindParam(":cb", $userId);
+        $this->stmt->bindParam(":ct", $commentText);
+
+        if ($this->stmt->execute()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function fetchComments ($taskId) {
+        $this->conn = Connection::connect();
+
+        $sql = "SELECT id, task_id, created_by, comment_text, updated_at FROM comments WHERE task_id = :ti";
+        $this->stmt = $this->conn->prepare($sql);
+        $this->stmt->bindParam(":ti", $taskId);
+        $this->stmt->execute();
+        $row = $this->stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if ($row) {
+            return $row;
+        }
+
+        return [];
+    }
 }

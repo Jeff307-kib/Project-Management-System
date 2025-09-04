@@ -6,6 +6,8 @@ export interface Task {
   due_date: string,
   priority_level: string,
   members: TaskAssignee[] | []
+  attachments?: Attachments[] | []
+  comments: Comment[] | []
 }
 
 
@@ -41,7 +43,7 @@ export interface TaskAssignee {
   id: string,
   username: string,
   email: string,
-  profile_url: string, 
+  profile_url: string | null, 
 }
 
 export interface getTaskByIdResponse {
@@ -57,4 +59,29 @@ export interface EditTask {
   priorityLevel: string,
   dueDate: string,
   members: string[],
+}
+
+export interface Attachments {
+  id: string,
+  task_id: string,
+  uploaded_by: string,
+  file_name: string,
+  file_type: string,
+  file_size: number,
+  file_path: string,
+  uploaded_at: string,
+}
+
+export interface AddComment {
+  commentText: string,
+  userId: string,
+  taskId: string,
+}
+
+export interface Comment {
+  id: string,
+  task_id: string,
+  comment_text: string,
+  updated_at: string,
+  user: TaskAssignee
 }

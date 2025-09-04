@@ -129,8 +129,15 @@ class taskController
 
         try {
             $task = $this->task->fetchTaskById($taskId);
+
             $taskAssignees = $this->getTaskAssigneesDetails($taskId);
             $task['members'] = $taskAssignees;
+
+            $attachments = $this->task->fetchAttachment($taskId);
+            $task['attachments'] = $attachments;
+
+            $comments = $this->getCommentDetail($taskId);
+            $task['comments'] = $comments;
 
             if ($task) {
                 echo json_encode([
@@ -180,7 +187,8 @@ class taskController
         }
     }
 
-    function deleteTask() {
+    function deleteTask()
+    {
         $data = json_decode(file_get_contents("php://input"), true);
 
         if (empty($data['taskId'])) {
@@ -204,7 +212,8 @@ class taskController
         }
     }
 
-    function startTask() {
+    function startTask()
+    {
         $data = json_decode(file_get_contents("php://input"), true);
 
         if (empty($data['taskId'])) {
@@ -228,14 +237,15 @@ class taskController
         }
     }
 
-    function addAttachment() {
+    function addAttachment()
+    {
         try {
             if (empty($_POST['taskId']) || empty($_POST['userId'])) {
                 http_response_code(400);
                 echo json_encode(['error' => 'Task Id or User Id Missing!']);
                 return;
             }
-            
+
             $taskId = $_POST['taskId'];
             $userId = $_POST['userId'];
 
@@ -245,9 +255,10 @@ class taskController
                 $fileTmpName = $_FILES['fileAttachment']['tmp_name'];
                 $fileSize = $_FILES['fileAttachment']['size'];
 
-                $maxFileSize = 15 * 1024 * 1024;
+                $fileSizeInMB = number_format($fileSize / (1024 * 1024), 2);
+                // $maxFileSize = 15 * 1024 * 1024;
 
-                if ($fileSize > $maxFileSize) {
+                if ($fileSizeInMB > 15) {
                     http_response_code(413);
                     echo json_encode(['error' => "File is too large. Maximum size is 15MB."]);
                     return;
@@ -273,17 +284,62 @@ class taskController
 
                 $filePath = 'uploads/attachments/' . $newFileName;
 
-                $this->task->insertAttachment($taskId, $userId, $fileName, $fileExt, $fileSize, $filePath);
+                $this->task->insertAttachment($taskId, $userId, $fileName, $fileExt, $fileSizeInMB, $filePath);
                 echo json_encode([
                     'success' => true,
                     'message' => 'Attachment Added Successfully',
                 ]);
             }
-
-            
         } catch (Exception $e) {
             http_response_code(500);
-            echo json_encode(['error' => 'Unexpected error occured.' . $e->getMessage() ]);
+            echo json_encode(['error' => 'Unexpected error occured.' . $e->getMessage()]);
         }
+    }
+
+    function addComment()
+    {
+        $data = json_decode(file_get_contents("php://input"), true);
+
+        if (empty($data['userId']) || empty($data['taskId'])) {
+            http_response_code(400);
+            echo json_encode(['error' => "Missing Task Id or User Id."]);
+            return;
+        }
+
+        if (empty($data['commentText'])) {
+            http_response_code(400);
+            echo json_encode(['error' => 'No comment text found.']);
+            return;
+        }
+
+        try {
+            $commentText = trim($data['commentText']);
+            $taskId = $data['taskId'];
+            $userId = $data['userId'];
+
+            $this->task->insertComment($taskId, $userId, $commentText);
+
+            echo json_encode([
+                'success' => true,
+                'message' => 'Comment Added Successfully!',
+            ]);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Unexpected error occured.', $e->getMessage()]);
+        }
+    }
+
+    function getCommentDetail($taskId)
+    {
+        $comments = $this->task->fetchComments($taskId);
+        foreach($comments as $key => $comment) {
+            $user = $this->user->fetchUserById($comment['created_by']);
+
+            $comments[$key]['user'] = $user;
+
+            unset($comments[$key]['created_by']);
+        }
+
+        return $comments;
     }
 }

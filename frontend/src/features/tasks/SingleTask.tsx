@@ -24,10 +24,13 @@ import { MoreVertical } from "lucide-react";
 
 import { useGetTaskByIdQuery } from "@/api/apiSlice";
 import { useStartTaskMutation } from "@/api/apiSlice";
+import { useAddCommentMutation } from "@/api/apiSlice";
 import TaskModal from "@/features/tasks/TaskModal";
 import DeleteButton from "@/features/utils/DeleteButton";
 import EditButton from "@/features/utils/EditButton";
 import AddAttachmentModal from "@/features/tasks/AddAttachmentModal";
+import { SuccessToast } from "@/features/utils/SuccessToast";
+import { ErrorToast } from "@/features/utils/ErrorToast";
 import type { RootState } from "@/app/store";
 import { useSelector } from "react-redux";
 
@@ -39,18 +42,25 @@ const SingleTask = () => {
   const navigate = useNavigate();
   const backendURL = "http://localhost/projectManagementSystem/backend/public";
   const { role } = useOutletContext<OutletContextType>();
+  console.log("role", role)
   const { user } = useSelector((state: RootState) => state.auth);
-  const userId = user?.id ? user.id : ''
+  const userId = user?.id ? user.id : "";
   const { taskId = "" } = useParams();
 
   const { data, isLoading, isSuccess, isError, error } =
     useGetTaskByIdQuery(taskId);
+    console.log ("task", data)
   const [startTask, { isLoading: starting }] = useStartTaskMutation();
 
   const [open, setOpen] = useState(false);
-  const [fileOpen, setFileOpen] = useState(false)
+  const [fileOpen, setFileOpen] = useState(false);
+
+  const attachments = data?.data.attachments; //attachments array
+  const members = data?.data.members; //members array
+  const comments = data?.data.comments; //comments array
 
   const isMember = data?.data.members.some((member) => member.id === userId);
+  console.log("ismember", isMember)
 
   const getStatusClasses = (status: string | undefined) => {
     switch (status) {
@@ -63,6 +73,11 @@ const SingleTask = () => {
     }
   };
 
+  const getAttachmentUploadMember = (id: string) => {
+    const uploadBy = members?.find((member) => member.id === id);
+    return uploadBy?.username || "Unknown";
+  };
+
   const handleEdit = () => {
     setOpen(!open);
   };
@@ -72,8 +87,34 @@ const SingleTask = () => {
   };
 
   const handleFile = () => {
-    setFileOpen(!fileOpen)
-  }
+    setFileOpen(!fileOpen);
+  };
+
+  //handle comments
+  const [commentText, setCommentText] = useState("");
+  const [addComment, { isLoading: isCommenting }] = useAddCommentMutation();
+
+  const handleComment = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    try {
+      await addComment({
+        commentText: commentText,
+        userId: userId,
+        taskId: taskId,
+      }).unwrap();
+      setCommentText("");
+      SuccessToast("Comment Added");
+    } catch (err) {
+      console.error(err);
+      if (err && typeof err === "object" && "data" in err) {
+        const typedErr = err as { data?: { error?: string } };
+        ErrorToast("Comment Failed!", `${typedErr.data?.error}`);
+      } else {
+        ErrorToast("Commnet Failed!", "An Unexpected Error Occured!");
+      }
+    }
+  };
 
   if (isLoading) {
     return (
@@ -204,7 +245,12 @@ const SingleTask = () => {
           setTaskOpen={handleEdit}
           task={data?.data}
         />
-        <AddAttachmentModal open={fileOpen} setOpen={handleFile} taskId={taskId} userId={userId}/>
+        <AddAttachmentModal
+          open={fileOpen}
+          setOpen={handleFile}
+          taskId={taskId}
+          userId={userId}
+        />
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-6 bg-white shadow">
           <div className="flex flex-row items-center gap-3">
@@ -229,7 +275,7 @@ const SingleTask = () => {
               {data?.data.priority_level}
             </Badge>
           </div>
-          {isMember && (
+          {(isMember || role === 'admin') && (
             <div className="flex flex-wrap gap-2">
               {data.data.status === "To Do" ? (
                 <Button
@@ -299,16 +345,40 @@ const SingleTask = () => {
                 )}
               </CardHeader>
               <CardContent>
-                <ul className="list-disc ml-5 space-y-2">
-                  <li key="1">
-                    <a
-                      href="#"
-                      className="text-blue-600 hover:underline font-medium"
-                    >
-                      Attachment File
-                    </a>{" "}
-                    <span className="text-gray-500 text-sm">1.2 MB</span>
-                  </li>
+                <ul className="list-disc ml-5 space-y-4">
+                  {attachments?.length === 0 ? (
+                    <li className="text-gray-500">No attachments found.</li>
+                  ) : (
+                    attachments?.map((attachment) => (
+                      <li key={attachment.id} className="relative">
+                        <div className="flex items-center space-x-2">
+                          <a
+                            href={`${backendURL}/${attachment.file_path}`}
+                            download
+                            target="_blank"
+                            className="text-blue-600 hover:underline font-medium break-all"
+                          >
+                            {attachment.file_name}
+                          </a>{" "}
+                          <span className="text-gray-500 text-sm">
+                            ({attachment.file_size} MB)
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-1 text-gray-500 text-xs mt-1">
+                          <span>
+                            Uploaded by{" "}
+                            {getAttachmentUploadMember(attachment.uploaded_by)}
+                          </span>
+                          <span>•</span>
+                          <span>
+                            {new Date(
+                              attachment.uploaded_at
+                            ).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </li>
+                    ))
+                  )}
                 </ul>
               </CardContent>
             </Card>
@@ -319,57 +389,50 @@ const SingleTask = () => {
                 <CardTitle>Comments</CardTitle>
               </CardHeader>
               <CardContent className="flex-grow overflow-y-auto space-y-4">
-                <div key="1" className="flex gap-3">
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage
-                      src="https://github.com/shadcn.png"
-                      alt="@shadcn"
-                    />
-                    <AvatarFallback>CN</AvatarFallback>
-                  </Avatar>
-                  <div className="flex flex-col">
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="font-semibold">Shad Cn</span>
-                      <span className="text-gray-400 text-xs">
-                        {new Date().toLocaleDateString()}
-                      </span>
+                {comments?.length === 0 && <p>No comment yet!</p>}
+                {comments?.map((comment) => (
+                  <div key={comment.id} className="flex gap-3">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage
+                        src= {`${backendURL}/${comment.user.profile_url}`}
+                        alt={comment.user.username}
+                      />
+                      <AvatarFallback>CN</AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="font-semibold">{comment.user.username}</span>
+                        <span className="text-gray-400 text-xs">
+                          {new Date(
+                              comment.updated_at
+                            ).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <p className="text-gray-700 text-sm">
+                        {comment.comment_text}
+                      </p>
                     </div>
-                    <p className="text-gray-700 text-sm">
-                      "Looking good! Let’s sync up on the due date."
-                    </p>
                   </div>
-                </div>
-                <div key="2" className="flex gap-3">
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage
-                      src="https://github.com/shadcn.png"
-                      alt="@shadcn"
-                    />
-                    <AvatarFallback>CN</AvatarFallback>
-                  </Avatar>
-                  <div className="flex flex-col">
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="font-semibold">Shad Cn</span>
-                      <span className="text-gray-400 text-xs">
-                        {new Date().toLocaleDateString()}
-                      </span>
-                    </div>
-                    <p className="text-gray-700 text-sm">
-                      "Looking good! Let’s sync up on the due date."
-                    </p>
-                  </div>
-                </div>
+                ))}
               </CardContent>
               {isMember && (
-                <CardFooter className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                  <Textarea
-                    placeholder="Add a comment..."
-                    className="flex-grow"
-                  />
-                  <Button className="w-full sm:w-auto mt-2 sm:mt-0">
-                    Post
-                  </Button>
-                </CardFooter>
+                <form onSubmit={handleComment}>
+                  <CardFooter className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                    <Textarea
+                      placeholder="Add a comment..."
+                      className="flex-grow"
+                      value={commentText}
+                      onChange={(e) => setCommentText(e.target.value)}
+                      required
+                    />
+                    <Button
+                      className="w-full sm:w-auto mt-2 sm:mt-0"
+                      type="submit"
+                    >
+                      {isCommenting ? "Posting" : "Post"}
+                    </Button>
+                  </CardFooter>
+                </form>
               )}
             </Card>
           </div>
@@ -392,7 +455,7 @@ const SingleTask = () => {
                 <CardTitle>Assigned Members</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col gap-3">
-                {data?.data.members.map((member) => (
+                {members?.map((member) => (
                   <div key={member.id} className="flex items-center gap-2">
                     <Avatar className="h-10 w-10">
                       <AvatarImage
@@ -411,9 +474,7 @@ const SingleTask = () => {
                     </div>
                   </div>
                 ))}
-                {data?.data.members.length == 0 && (
-                  <div>No assigned members</div>
-                )}
+                {members?.length == 0 && <div>No assigned members</div>}
               </CardContent>
             </Card>
           </div>
