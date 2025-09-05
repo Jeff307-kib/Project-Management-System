@@ -145,13 +145,6 @@ class Task
             $this->conn->rollBack();
             return false;
         }
-        // $sql = "UPDATE tasks SET title = :tt, description = :de, due_date = :dd, updated_at = NOW(), priority_level = :pl WHERE id = :ti";
-        // $this->stmt = $this->conn->prepare($sql);
-        // $this->stmt->bindParam(":tt", $title);
-        // $this->stmt->bindParam(":de", $description);
-        // $this->stmt->bindParam(":dd", $dueDate);
-        // $this->stmt->bindParam(":pl", $priorityLevel);
-        // $this->stmt->bindParam(":ti", $taskId);
 
         if ($this->stmt->execute()) {
             return true;

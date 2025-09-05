@@ -23,7 +23,7 @@ import { ArrowLeft } from "lucide-react";
 import { MoreVertical } from "lucide-react";
 
 import { useGetTaskByIdQuery } from "@/api/apiSlice";
-import { useStartTaskMutation } from "@/api/apiSlice";
+import { useUpdateTaskStatusMutation } from "@/api/apiSlice";
 import { useAddCommentMutation } from "@/api/apiSlice";
 import TaskModal from "@/features/tasks/TaskModal";
 import DeleteButton from "@/features/utils/DeleteButton";
@@ -45,12 +45,13 @@ const SingleTask = () => {
   console.log("role", role)
   const { user } = useSelector((state: RootState) => state.auth);
   const userId = user?.id ? user.id : "";
-  const { taskId = "" } = useParams();
+  const { taskId = "" } = useParams()
+  const { workspaceId = ""} = useParams()
 
   const { data, isLoading, isSuccess, isError, error } =
     useGetTaskByIdQuery(taskId);
     console.log ("task", data)
-  const [startTask, { isLoading: starting }] = useStartTaskMutation();
+  const [ updateTaskStatus, { isLoading: starting }] = useUpdateTaskStatusMutation();
 
   const [open, setOpen] = useState(false);
   const [fileOpen, setFileOpen] = useState(false);
@@ -82,8 +83,8 @@ const SingleTask = () => {
     setOpen(!open);
   };
 
-  const handleStart = () => {
-    startTask(taskId);
+  const handleStatus = (status: string) => {
+    updateTaskStatus({taskId, status, workspaceId})
   };
 
   const handleFile = () => {
@@ -102,6 +103,7 @@ const SingleTask = () => {
         commentText: commentText,
         userId: userId,
         taskId: taskId,
+        workspaceId: workspaceId,
       }).unwrap();
       setCommentText("");
       SuccessToast("Comment Added");
@@ -250,6 +252,7 @@ const SingleTask = () => {
           setOpen={handleFile}
           taskId={taskId}
           userId={userId}
+          workspaceId={workspaceId}
         />
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-6 bg-white shadow">
@@ -280,7 +283,7 @@ const SingleTask = () => {
               {data.data.status === "To Do" ? (
                 <Button
                   className="bg-green-600 hover:bg-green-700"
-                  onClick={handleStart}
+                  onClick={() => handleStatus('In Progress')}
                 >
                   {starting ? "Starting" : "Start Task"}
                 </Button>
@@ -300,7 +303,7 @@ const SingleTask = () => {
                       <DeleteButton label="Task" id={Number(taskId)} />
                     </>
                   )}
-                  <Button variant="default">Mark Complete</Button>
+                  <Button variant="default" onClick={() => handleStatus('Pending')} disabled = {data.data.status === 'To Do' || data.data.status === 'Pending'}>Mark Complete</Button>
                 </PopoverContent>
               </Popover>
             </div>
@@ -338,7 +341,7 @@ const SingleTask = () => {
             <Card>
               <CardHeader className="flex items-center justify-between">
                 <CardTitle>Attachments</CardTitle>
-                {isMember && (
+                {(isMember || role === 'admin') && (
                   <Button size="sm" variant="outline" onClick={handleFile}>
                     Add Attachment
                   </Button>
@@ -415,7 +418,7 @@ const SingleTask = () => {
                   </div>
                 ))}
               </CardContent>
-              {isMember && (
+              {(isMember || role === 'admin') && (
                 <form onSubmit={handleComment}>
                   <CardFooter className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
                     <Textarea

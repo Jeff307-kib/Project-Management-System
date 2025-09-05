@@ -7,13 +7,13 @@ class Notification {
     public function createNotification(array $data) {
         $this->conn = Connection::connect();
 
-        $sql = "INSERT INTO notifications (recipient_id, sender_id, type, related_id, status, message, created_at) VALUES (:ri, :si, :ty, :re, :st, :me,NOW())";
+        $sql = "INSERT INTO notifications (recipient_id, sender_id, type, related_id, invitation_status, message, created_at) VALUES (:ri, :si, :ty, :re, :st, :me,NOW())";
         $this->stmt = $this->conn->prepare($sql);
         $this->stmt->bindParam(':ri', $data['recipient_id']);
         $this->stmt->bindParam(':si', $data['sender_id']);
         $this->stmt->bindParam(':ty', $data['type']);
         $this->stmt->bindParam(':re', $data['related_id']);
-        $this->stmt->bindParam(':st', $data['status']);
+        $this->stmt->bindParam(':st', $data['invitation_status']);
         $this->stmt->bindParam(':me', $data['message']);
 
         if($this->stmt->execute()) {
@@ -26,7 +26,7 @@ class Notification {
     public function fetchNotification($userId) {
         $this->conn = Connection::connect();
 
-        $sql = "SELECT id, type, status, message, created_at FROM notifications WHERE recipient_id = :ri";
+        $sql = "SELECT id, type, invitation_status, message, created_at, is_read FROM notifications WHERE recipient_id = :ri";
         $this->stmt = $this->conn->prepare($sql);
         $this->stmt->bindParam(":ri", $userId);
 
@@ -53,7 +53,7 @@ class Notification {
     public function updateNotificationStatus($notificationId, $status) {
         $this->conn = Connection::connect();
 
-        $sql = "UPDATE notifications SET status = :st WHERE id = :ni";
+        $sql = "UPDATE notifications SET invitation_status = :st WHERE id = :ni";
         $this->stmt = $this->conn->prepare($sql);
         $this->stmt->bindParam(":st", $status);
         $this->stmt->bindParam(":ni", $notificationId);
@@ -65,16 +65,15 @@ class Notification {
         return false;
     }
 
-    public function sendReply($recipientId, $senderId, $type, $relatedId, $status, $message) {
+    public function sendReply($recipientId, $senderId, $type, $relatedId, $message) {
         $this->conn = Connection::connect();
 
-        $sql = "INSERT INTO notifications (recipient_id, sender_id, type, related_id, status, message, created_at) VALUES (:ri, :si, :ty, :re, :st, :me, NOW())";
+        $sql = "INSERT INTO notifications (recipient_id, sender_id, type, related_id, message, created_at) VALUES (:ri, :si, :ty, :re, :me, NOW())";
         $this->stmt = $this->conn->prepare($sql);
         $this->stmt->bindParam(":ri", $recipientId);
         $this->stmt->bindParam(":si", $senderId);
         $this->stmt->bindParam(":ty", $type);
         $this->stmt->bindParam(":re", $relatedId);
-        $this->stmt->bindParam(":st", $status);
         $this->stmt->bindParam(":me", $message);
 
         if ($this->stmt->execute()) {

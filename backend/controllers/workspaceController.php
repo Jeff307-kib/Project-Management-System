@@ -206,7 +206,7 @@ class workspaceController
                 'sender_id' => $inviterId,
                 'type' => 'Invitation',
                 'related_id' => $workspaceId,
-                'status' => 'Pending',
+                'invitation_status' => 'Pending',
                 'message' => 'You have been invited to a new workspace! ' . $inviter['email'] . ' invited you to join ' . $workspace['name'] . '.',
             ]);
 

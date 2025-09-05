@@ -57,7 +57,7 @@ class notificationController
 
             $notification = $this->noti->fetchNotificationById($notificationId);
 
-            if (!$notification || $notification['status'] !== 'Pending' || $notification['type'] !== 'Invitation') {
+            if (!$notification || $notification['invitation_status'] !== 'Pending' || $notification['type'] !== 'Invitation') {
                 http_response_code(404);
                 echo json_encode(['error' => 'Invitation not found or not pending.']);
                 return;
@@ -75,7 +75,7 @@ class notificationController
 
             $invitationReply = "Invitation accepted! " . $user['email'] . " accepted your invitation to " . $workspace['name'] . ".";
 
-            $this->noti->sendReply($notification['sender_id'], $userId, 'Invitation Reply', $workspaceId, 'Unread', $invitationReply);
+            $this->noti->sendReply($notification['sender_id'], $userId, 'Invitation Reply', $workspaceId, $invitationReply);
 
             $this->noti->dropNotification($notificationId);
 

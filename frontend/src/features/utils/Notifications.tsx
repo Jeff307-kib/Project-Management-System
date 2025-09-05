@@ -97,6 +97,7 @@ const Notifications = () => {
           Invitation: "bg-chart-3 text-foreground",
           "Invitation Reply": "bg-chart-3 text-foreground",
           "Task Assign": "bg-chart-2 text-background",
+          "Task Update": "bg-chart-2 text-background",
           "Deadline Warning": "bg-chart-5 text-background",
           "Deadline Missed": "bg-destructive text-foreground",
         };

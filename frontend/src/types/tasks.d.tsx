@@ -76,6 +76,7 @@ export interface AddComment {
   commentText: string,
   userId: string,
   taskId: string,
+  workspaceId: string,
 }
 
 export interface Comment {
@@ -84,4 +85,10 @@ export interface Comment {
   comment_text: string,
   updated_at: string,
   user: TaskAssignee
+}
+
+export interface UpdateStatus {
+  taskId: string,
+  status: string,
+  workspaceId: string,
 }

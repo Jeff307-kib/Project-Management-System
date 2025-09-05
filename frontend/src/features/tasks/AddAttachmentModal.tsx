@@ -17,9 +17,10 @@ type Props = {
   setOpen: () => void,
   taskId: string,
   userId: string,
+  workspaceId: string,
 };
 
-const AddAttachmentModal = ({ open, setOpen, taskId, userId }: Props) => {
+const AddAttachmentModal = ({ open, setOpen, taskId, userId, workspaceId }: Props) => {
   const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
   const [addAttachment, { isLoading }] = useAddAttachmentMutation();
   const [formError, setFormError] = useState('')
@@ -41,6 +42,7 @@ const AddAttachmentModal = ({ open, setOpen, taskId, userId }: Props) => {
     formData.append("fileAttachment", attachmentFile)
     formData.append("taskId", taskId)
     formData.append('userId', userId)
+    formData.append('workspaceId', workspaceId)
 
     try {
       await addAttachment(formData).unwrap();

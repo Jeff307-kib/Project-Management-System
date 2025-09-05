@@ -3,18 +3,21 @@ require_once '../config/authCheck.php';
 include_once '../models/Task.php';
 include_once '../models/Workspace.php';
 include_once '../models/User.php';
+include_once '../models/Notification.php';
 
 class taskController
 {
     private $task;
     private $workspace;
     private $user;
+    private $noti;
 
     public function __construct()
     {
         $this->task = new Task();
         $this->workspace = new Workspace();
         $this->user = new User();
+        $this->noti = new Notification();
     }
 
     function getTasks()
@@ -83,6 +86,8 @@ class taskController
             $dueDate = $data['dueDate'];
             $priorityLevel = $data['priorityLevel'];
 
+            $workspaceDetail = $this->workspace->fetchWorkspaceById($workspaceId, $creatorId);
+
             if ($this->task->checkDuplicate($title, $workspaceId)) {
                 http_response_code(409);
                 echo json_encode(['error' => "A Task with this name is already exists!"]);
@@ -94,8 +99,17 @@ class taskController
             if (isset($data['members'])) {
                 foreach ($data['members'] as $memberId) {
                     $this->task->insertTaskAssignees($taskId, $memberId);
+                    $this->noti->createNotification([
+                        'recipient_id' => $memberId,
+                        'sender_id' => 17,
+                        'type' => 'Task Assign',
+                        'related_id' => $workspaceId,
+                        'invitation_status' => null,
+                        'message' => 'Admin assigned you a new task in ' . $workspaceDetail['name'] . ' : ' . $title,
+                    ]);
                 }
             }
+
             echo json_encode([
                 'success' => true,
                 'message' => "Task Added Successfully!",
@@ -212,20 +226,35 @@ class taskController
         }
     }
 
-    function startTask()
+    function updateStatus()
     {
         $data = json_decode(file_get_contents("php://input"), true);
 
-        if (empty($data['taskId'])) {
+        if (empty($data['taskId']) || empty($data['workspaceId'])) {
             http_response_code(400);
-            echo json_encode(['error' => 'Missing Task Id.']);
+            echo json_encode(['error' => 'Missing Task Id or Workspace Id.']);
+            return;
+        }
+
+        if (empty($data['status'])) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Missing Status']);
             return;
         }
 
         $taskId = $data['taskId'];
+        $status = $data['status'];
+        $workspaceId = $data['workspaceId'];
+        $userId = $_SESSION['userId'];
 
         try {
-            $this->task->updateStatus($taskId, "In Progress");
+            $this->task->updateStatus($taskId, $status);
+
+            $taskDetail = $this->task->fetchTaskById($taskId);
+            $workspaceDetail = $this->workspace->fetchWorkspaceById($workspaceId, $userId);
+            $message = "The status of your Task '" . $taskDetail['title'] . "' from Workspace: '" . $workspaceDetail['name'] . "' has been updated to " . $status;
+
+            $this->sendNotificationToTaskAssignees($taskId, $userId, $workspaceId, $message);
 
             echo json_encode([
                 'success' => true,
@@ -240,14 +269,15 @@ class taskController
     function addAttachment()
     {
         try {
-            if (empty($_POST['taskId']) || empty($_POST['userId'])) {
+            if (empty($_POST['taskId']) || empty($_POST['userId']) || empty($_POST['workspaceId'])) {
                 http_response_code(400);
-                echo json_encode(['error' => 'Task Id or User Id Missing!']);
+                echo json_encode(['error' => 'Task Id or User Id or Workspace Id Missing!']);
                 return;
             }
 
             $taskId = $_POST['taskId'];
             $userId = $_POST['userId'];
+            $workspaceId = $_POST['workspaceId'];
 
             if (isset($_FILES['fileAttachment']) && $_FILES['fileAttachment']['error'] === 0) {
                 $uploadDir = __DIR__ . '/../public/uploads/attachments/';
@@ -285,6 +315,12 @@ class taskController
                 $filePath = 'uploads/attachments/' . $newFileName;
 
                 $this->task->insertAttachment($taskId, $userId, $fileName, $fileExt, $fileSizeInMB, $filePath);
+
+                $taskDetail = $this->task->fetchTaskById($taskId);
+                $workspaceDetail = $this->workspace->fetchWorkspaceById($workspaceId, $userId);
+                $message = "A new attachment was added to the task '" . $taskDetail['title'] . "' from " . $workspaceDetail['name'] . ".";
+
+                $this->sendNotificationToTaskAssignees($taskId, $userId, $workspaceId, $message);
                 echo json_encode([
                     'success' => true,
                     'message' => 'Attachment Added Successfully',
@@ -300,9 +336,9 @@ class taskController
     {
         $data = json_decode(file_get_contents("php://input"), true);
 
-        if (empty($data['userId']) || empty($data['taskId'])) {
+        if (empty($data['userId']) || empty($data['workspaceId']) || empty($data['taskId'])) {
             http_response_code(400);
-            echo json_encode(['error' => "Missing Task Id or User Id."]);
+            echo json_encode(['error' => 'User Id or Workspace Id or Task Id Missing!']);
             return;
         }
 
@@ -316,9 +352,15 @@ class taskController
             $commentText = trim($data['commentText']);
             $taskId = $data['taskId'];
             $userId = $data['userId'];
+            $workspaceId = $data['workspaceId'];
+
+            $taskDetail = $this->task->fetchTaskById($taskId);
+            $workspaceDetail = $this->workspace->fetchWorkspaceById($workspaceId, $userId);
+            $message = "A new comment was posted in the task '" . $taskDetail['title'] . "' from " . $workspaceDetail['name'] . ".";
 
             $this->task->insertComment($taskId, $userId, $commentText);
 
+            $this->sendNotificationToTaskAssignees($taskId, $userId, $workspaceId, $message);
             echo json_encode([
                 'success' => true,
                 'message' => 'Comment Added Successfully!',
@@ -332,7 +374,7 @@ class taskController
     function getCommentDetail($taskId)
     {
         $comments = $this->task->fetchComments($taskId);
-        foreach($comments as $key => $comment) {
+        foreach ($comments as $key => $comment) {
             $user = $this->user->fetchUserById($comment['created_by']);
 
             $comments[$key]['user'] = $user;
@@ -341,5 +383,23 @@ class taskController
         }
 
         return $comments;
+    }
+
+    function sendNotificationToTaskAssignees($taskId, $userId, $workspaceId, $message)
+    {
+        $taskAssignees = $this->task->fetchTaskAssignees($taskId);
+
+        foreach ($taskAssignees as $taskAssignee) {
+            $this->noti->createNotification([
+                'recipient_id' => $taskAssignee['user_id'],
+                'sender_id' => $userId,
+                'type' => 'Task Update',
+                'related_id' => $workspaceId,
+                'invitation_status' => null,
+                'message' => $message,
+            ]);
+        }
+
+        return true;
     }
 }
