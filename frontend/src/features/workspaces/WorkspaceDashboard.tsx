@@ -44,7 +44,6 @@ const WorkspaceDashboard = () => {
   const { workspaceId = "", taskId = "" } = useParams();
   const workspaceIdNumber = Number(workspaceId);
 
-  // console.log(workspaceId);
   const { data, isLoading, isError, error, isSuccess } =
     useGetWorkspaceByIdQuery(workspaceIdNumber);
   console.log("Workspace user role: ", data?.data.role);

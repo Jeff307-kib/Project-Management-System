@@ -150,15 +150,11 @@ class workspaceController
 
         try {
             $workspaceId = $data['workspaceId'];
-            if ($this->workspace->dropWorkspace($workspaceId)) {
-                echo json_encode([
-                    'success' => true,
-                    'message' => "Delete Success!",
-                ]);
-            } else {
-                http_response_code(401);
-                echo json_encode(['error' => 'Invalid workspace Id']);
-            }
+            $this->workspace->dropWorkspace($workspaceId);
+            echo json_encode([
+                'success' => true,
+                'message' => "Delete Success!",
+            ]);
         } catch (Exception $e) {
             http_response_code(400);
             echo json_encode(['error' => $e->getMessage()]);
@@ -248,6 +244,77 @@ class workspaceController
         } catch (Exception $e) {
             http_response_code(500);
             echo json_encode(['error' => 'Unexpected error occured: ' . $e->getMessage()]);
+        }
+    }
+
+    function changeMemberRole()
+    {
+        $data = json_decode(file_get_contents("php://input"), true);
+
+        if (empty($data['workspaceId'])  || empty($data['memberId']) || empty($data['role'])) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Missing Required Data!']);
+            return;
+        }
+
+        try {
+            $workspaceId = $data['workspaceId'];
+            $memberId = $data['memberId'];
+            $role = $data['role'];
+
+            $this->workspace->updateMemberRole($workspaceId, $memberId, $role);
+
+            $workspace = $this->workspace->fetchWorkspaceById($workspaceId, $memberId);
+            $message = "You are now a $role of Workspace: " . $workspace['name'] . ".";
+
+            $this->noti->createNotification([
+                'recipient_id' => $memberId,
+                'sender_id' => '17',
+                'type' => 'Role Change',
+                'related_id' => $workspaceId,
+                'message' => $message,
+            ]);
+            echo json_encode([
+                'success' => true,
+                'message' => "Role Changes Successfully!",
+            ]);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Unexpected Error Occured.' . $e->getMessage()]);
+        }
+    }
+
+    function removeMember() {
+        $data = json_decode(file_get_contents("php://input"), true);
+
+        if (empty($data['workspaceId'])  || empty($data['memberId'])) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Missing Required Data!']);
+            return;
+        }
+
+        try {
+            $workspaceId = $data['workspaceId'];
+            $memberId = $data['memberId'];
+
+            $workspace = $this->workspace->fetchWorkspaceById($workspaceId, $memberId);
+            $message = "You have been remove from the Workspace: " . $workspace['name'] . ".";
+
+            $this->noti->createNotification([
+                'recipient_id' => $memberId,
+                'sender_id' => '17',
+                'type' => 'Role Change',
+                'related_id' => $workspaceId,
+                'message' => $message,
+            ]);
+            $this->workspace->dropMember($workspaceId, $memberId);
+            echo json_encode([
+                'success' => true,
+                'message' => "Member Removed Successfully!",
+            ]);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Unexpected Error Occured.' . $e->getMessage()]);
         }
     }
 }

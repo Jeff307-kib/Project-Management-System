@@ -18,6 +18,7 @@ import type {
   Loginuser,
   ForgotPasswordResponse,
   ResetPassword,
+  ChangeRole,
 } from "@/types/users.d";
 
 import type {
@@ -28,7 +29,7 @@ import type {
   EditTask,
   AddComment,
   UpdateStatus,
-} from "@/types/tasks.d";
+  } from "@/types/tasks.d";
 
 
 export const apiSlice = createApi({
@@ -37,7 +38,7 @@ export const apiSlice = createApi({
     baseUrl: "http://localhost/projectManagementSystem/backend/public/",
     credentials: "include",
   }),
-  tagTypes: ["Workspace", "User", "Notification", "Task"],
+  tagTypes: ["Workspace", "User", "Notification", "Task", "Member"],
 
   endpoints: (builder) => ({
     getWorkspaces: builder.query<GetWorkspacesResponse, void>({
@@ -182,6 +183,7 @@ export const apiSlice = createApi({
         url: `getMembers.php?workspaceId=${workspaceId}`,
         method: "GET",
       }),
+      providesTags: ['Member'],
     }),
     getTasks: builder.query<GetTasksResponse, string>({
       query: (workspaceId) => ({
@@ -244,7 +246,23 @@ export const apiSlice = createApi({
         body: comment,
       }),
       invalidatesTags: ['Task', "Notification"]
-    })
+    }),
+    changeMemberRole: builder.mutation<TaskMutationResponse, ChangeRole>({
+      query: (changeRole) => ({
+        url: 'changeMemberRole.php',
+        method: 'POST',
+        body: changeRole,
+      }),
+      invalidatesTags: ['Member'],
+    }),
+    removeMember: builder.mutation<TaskMutationResponse, ChangeRole>({
+      query: (changeRole) => ({
+        url: 'removeMember.php',
+        method: 'POST',
+        body: changeRole,
+      }),
+      invalidatesTags: ['Member'],
+    }),
   }),
 });
 
@@ -275,4 +293,6 @@ export const {
   useUpdateTaskStatusMutation,
   useAddAttachmentMutation,
   useAddCommentMutation,
+  useChangeMemberRoleMutation,
+  useRemoveMemberMutation,
 } = apiSlice;

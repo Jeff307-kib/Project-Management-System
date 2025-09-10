@@ -214,6 +214,15 @@ class taskController
         try {
             $taskId = $data['taskId'];
 
+            $attachments = $this->task->fetchAttachment($taskId);
+
+            foreach ($attachments as $attachment) {
+                $file = __DIR__ . '/../public/' . $attachment['file_path'];
+                if (file_exists($file)) {
+                    unlink($file);
+                }
+            }
+
             $this->task->dropTask($taskId);
 
             echo json_encode([

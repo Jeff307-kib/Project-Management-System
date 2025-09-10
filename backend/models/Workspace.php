@@ -188,4 +188,42 @@
 
             return [];
         }
+ 
+        public function updateMemberRole($workspaceId, $memberId, $role) {
+            $this->conn = Connection::connect();
+
+            $sql = "UPDATE user_workspace SET role = :ro WHERE workspace_id = :wi AND user_id = :mi";
+            $this->stmt = $this->conn->prepare($sql);
+            $this->stmt->bindParam(":ro", $role);
+            $this->stmt->bindParam(":wi", $workspaceId);
+            $this->stmt->bindParam(":mi", $memberId);
+
+            if ($this->stmt->execute()) {
+                return true;
+            }
+
+            return false;
+        }
+
+        public function dropMember($workspaceId, $memberId)
+        {
+            $this->conn = Connection::connect();
+
+            try {
+                $this->conn->beginTransaction();
+
+                $sql = "DELETE FROM user_workspace WHERE workspace_id = :wid AND user_id = :mi";
+                $this->stmt = $this->conn->prepare($sql);
+                $this->stmt->bindParam(":wid", $workspaceId);
+                $this->stmt->bindParam(":mi", $memberId);
+                $this->stmt->execute();
+
+                $this->conn->commit();
+                return true;
+
+            } catch (Exception $e) {
+                $this->conn->rollBack();
+                return false;
+            }
+        }
     }

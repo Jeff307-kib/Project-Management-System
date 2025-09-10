@@ -42,7 +42,6 @@ const SingleTask = () => {
   const navigate = useNavigate();
   const backendURL = "http://localhost/projectManagementSystem/backend/public";
   const { role } = useOutletContext<OutletContextType>();
-  console.log("role", role)
   const { user } = useSelector((state: RootState) => state.auth);
   const userId = user?.id ? user.id : "";
   const { taskId = "" } = useParams()
@@ -50,7 +49,6 @@ const SingleTask = () => {
 
   const { data, isLoading, isSuccess, isError, error } =
     useGetTaskByIdQuery(taskId);
-    console.log ("task", data)
   const [ updateTaskStatus, { isLoading: starting }] = useUpdateTaskStatusMutation();
 
   const [open, setOpen] = useState(false);
@@ -74,9 +72,12 @@ const SingleTask = () => {
     }
   };
 
+  //handle the add attachment and post comment button (diable when the task hasn't started, when the task is pending and completed)
+  const isActionDisabled = data?.data.status === 'To Do' || data?.data.status === 'Pending' || data?.data.status === 'Completed'
+
   const getAttachmentUploadMember = (id: string) => {
     const uploadBy = members?.find((member) => member.id === id);
-    return uploadBy?.username || "Unknown";
+    return uploadBy?.username || "Workspace Admin";
   };
 
   const handleEdit = () => {
@@ -342,7 +343,7 @@ const SingleTask = () => {
               <CardHeader className="flex items-center justify-between">
                 <CardTitle>Attachments</CardTitle>
                 {(isMember || role === 'admin') && (
-                  <Button size="sm" variant="outline" onClick={handleFile}>
+                  <Button size="sm" variant="outline" onClick={handleFile} disabled={isActionDisabled}>
                     Add Attachment
                   </Button>
                 )}
@@ -431,6 +432,7 @@ const SingleTask = () => {
                     <Button
                       className="w-full sm:w-auto mt-2 sm:mt-0"
                       type="submit"
+                      disabled={isActionDisabled}
                     >
                       {isCommenting ? "Posting" : "Post"}
                     </Button>
