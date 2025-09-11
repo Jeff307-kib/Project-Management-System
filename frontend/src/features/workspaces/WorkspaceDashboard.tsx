@@ -106,7 +106,7 @@ const WorkspaceDashboard = () => {
             <TabsList className="mr-4">
               <TabsTrigger value="tasks">Tasks</TabsTrigger>
               <TabsTrigger value="members">Members</TabsTrigger>
-              <TabsTrigger value="report">Report</TabsTrigger>
+              { role === 'admin' && <TabsTrigger value="report">Report</TabsTrigger>}
             </TabsList>
             {role === "admin" && (
               <Popover>

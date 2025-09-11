@@ -170,6 +170,14 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ["Workspace", "Notification"],
     }),
+    markNotificationRead: builder.mutation<WorkspaceMutationResponse, string>({
+      query: (userId) => ({
+        url: 'markNotificationRead.php',
+        method: 'POST',
+        body: { userId },
+      }),
+      invalidatesTags: ['Notification'],
+    }),
     deleteNotification: builder.mutation<WorkspaceMutationResponse, string>({
       query: (notificationId) => ({
         url: "deleteNotification.php",
@@ -198,7 +206,7 @@ export const apiSlice = createApi({
         method: "POST",
         body: task,
       }),
-      invalidatesTags: ["Task"],
+      invalidatesTags: ["Task", "Notification"],
     }),
     getTaskById: builder.query<getTaskByIdResponse, string>({
       query: (taskId) => ({
@@ -283,6 +291,7 @@ export const {
   useGetNotificationsQuery,
   useAcceptInviationMutation,
   useDeclineInvitationMutation,
+  useMarkNotificationReadMutation,
   useDeleteNotificationMutation,
   useGetMembersQuery,
   useGetTasksQuery,

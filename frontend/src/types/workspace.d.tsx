@@ -59,6 +59,7 @@ export interface Notification {
   status: string,
   message: string,
   created_at: string,
+  is_read: boolean,
 }
 
 export interface getNotificationResponse {

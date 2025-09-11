@@ -26,7 +26,7 @@ class Notification {
     public function fetchNotification($userId) {
         $this->conn = Connection::connect();
 
-        $sql = "SELECT id, type, invitation_status, message, created_at, is_read FROM notifications WHERE recipient_id = :ri";
+        $sql = "SELECT id, type, invitation_status, message, created_at, is_read FROM notifications WHERE recipient_id = :ri ORDER BY created_at DESC";
         $this->stmt = $this->conn->prepare($sql);
         $this->stmt->bindParam(":ri", $userId);
 
@@ -89,6 +89,21 @@ class Notification {
         $sql = "DELETE FROM notifications WHERE id = :ni";
         $this->stmt = $this->conn->prepare($sql);
         $this->stmt->bindParam(":ni", $notificationId);
+
+        if ($this->stmt->execute()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function markNorificationRead($userId) {
+        $this->conn = Connection::connect();
+        $isRead = true;
+        $sql = "UPDATE notifications SET is_read = :ir WHERE recipient_id = :ui AND is_read = FALSE";
+        $this->stmt = $this->conn->prepare($sql);
+        $this->stmt->bindParam(":ui", $userId);
+        $this->stmt->bindParam(":ir", $isRead);
 
         if ($this->stmt->execute()) {
             return true;

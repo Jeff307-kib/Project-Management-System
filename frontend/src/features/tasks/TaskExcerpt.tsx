@@ -43,6 +43,7 @@ const TaskExcerpt = ({ taskData }: Props) => {
       case "Completed":
         return "outline";
       case "Over Due":
+      case "Needs Revision":
         return "destructive";
       default:
         return "outline";

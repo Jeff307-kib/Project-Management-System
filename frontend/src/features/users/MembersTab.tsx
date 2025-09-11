@@ -20,7 +20,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSub,
   DropdownMenuSubTrigger,
-  DropdownMenuSubContent
+  DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -56,11 +56,22 @@ const MembersTab = ({ role }: Props) => {
   const handleOpen = () => setIsOpen(!isOpen);
 
   // Handle change member role
-  const [ changeMemberRole ] = useChangeMemberRoleMutation();
-  const handleChangeRole = async(memberId: string, newRole: string, username: string) => {
+  const [changeMemberRole] = useChangeMemberRoleMutation();
+  const handleChangeRole = async (
+    memberId: string,
+    newRole: string,
+    username: string
+  ) => {
     try {
-      await changeMemberRole({workspaceId: workspaceId, memberId: memberId, role: newRole}).unwrap();
-      SuccessToast("Member Role Changed!", `${username} is now ${newRole} of this workspace.`);
+      await changeMemberRole({
+        workspaceId: workspaceId,
+        memberId: memberId,
+        role: newRole,
+      }).unwrap();
+      SuccessToast(
+        "Member Role Changed!",
+        `${username} is now ${newRole} of this workspace.`
+      );
     } catch (err) {
       console.error(err);
       ErrorToast("Failed to Change Member Role!");
@@ -68,10 +79,13 @@ const MembersTab = ({ role }: Props) => {
   };
 
   // Handle Remove member
-  const [ removeMember ] = useRemoveMemberMutation();
-  const handleRemoveMember = async(memberId: string) => {
+  const [removeMember] = useRemoveMemberMutation();
+  const handleRemoveMember = async (memberId: string) => {
     try {
-      await removeMember({workspaceId: workspaceId,memberId: memberId}).unwrap();
+      await removeMember({
+        workspaceId: workspaceId,
+        memberId: memberId,
+      }).unwrap();
       SuccessToast("Member Removed Successfully!");
     } catch (err) {
       console.error(err);
@@ -136,42 +150,48 @@ const MembersTab = ({ role }: Props) => {
             ? new Date(member.joined_at).toLocaleDateString()
             : "—"}
         </TableCell>
-        <TableCell className="text-center">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 text-muted-foreground hover:text-foreground"
-              >
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>Change Role</DropdownMenuSubTrigger>
-                <DropdownMenuSubContent>
-                  <DropdownMenuItem
-                    onClick={() => handleChangeRole(member.id, "admin" , member.username)}
-                  >
-                    Admin
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => handleChangeRole(member.id, "member", member.username)}
-                  >
-                    Member
-                  </DropdownMenuItem>
-                </DropdownMenuSubContent>
-              </DropdownMenuSub>
-              <DropdownMenuItem
-                className="text-destructive"
-                onClick={() => handleRemoveMember(member.id)}
-              >
-                Remove From Workspace
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </TableCell>
+        {role === "admin" && (
+          <TableCell className="text-center">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                >
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>Change Role</DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuItem
+                      onClick={() =>
+                        handleChangeRole(member.id, "admin", member.username)
+                      }
+                    >
+                      Admin
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() =>
+                        handleChangeRole(member.id, "member", member.username)
+                      }
+                    >
+                      Member
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+                <DropdownMenuItem
+                  className="text-destructive"
+                  onClick={() => handleRemoveMember(member.id)}
+                >
+                  Remove From Workspace
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </TableCell>
+        )}
       </TableRow>
     ));
   };
@@ -196,7 +216,9 @@ const MembersTab = ({ role }: Props) => {
                 <TableHead>Member</TableHead>
                 <TableHead className="text-center">Role</TableHead>
                 <TableHead className="text-center">Joined</TableHead>
-                <TableHead className="text-center">Actions</TableHead>
+                {role === "admin" && (
+                  <TableHead className="text-center">Actions</TableHead>
+                )}
               </TableRow>
             </TableHeader>
             <TableBody>{renderMembers()}</TableBody>

@@ -131,7 +131,8 @@ class notificationController
         }
     }
 
-    function deleteNotification() {
+    function deleteNotification()
+    {
         $data = json_decode(file_get_contents("php://input"), true);
 
         try {
@@ -151,6 +152,30 @@ class notificationController
         } catch (Exception $e) {
             http_response_code(500);
             echo json_encode(['error' => 'Unexpected error occured: ' . $e->getMessage()]);
+        }
+    }
+
+    function markNorificationRead() {
+        $data = json_decode(file_get_contents("php://input"),true);
+        if (empty($data['userId'])) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Missing User Id!']);
+            return;
+        }
+
+        try {
+            $userId = $data['userId'];
+
+            $this->noti->markNorificationRead($userId);
+
+            echo json_encode([
+                'success' => true,
+                'message' => 'Notifications marked as read!',
+            ]);
+
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Unexpected Error Occured: ' . $e->getMessage()]);
         }
     }
 }
