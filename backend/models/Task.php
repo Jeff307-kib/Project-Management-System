@@ -138,7 +138,7 @@ class Task
             $stmt2->bindParam(":pl", $priorityLevel);
             $stmt2->bindParam(":ti", $taskId);
             $stmt2->execute();
-            
+
             $this->conn->commit();
             return true;
         } catch (Exception $e) {
@@ -178,11 +178,15 @@ class Task
         }
     }
 
-    public function updateStatus($taskId, $status) {
+    public function updateStatus($taskId, $status, $rejectionReason = null)
+    {
         $this->conn = Connection::connect();
 
-        $sql = "UPDATE tasks SET status = :st WHERE id = :ti";
+        $sql = "UPDATE tasks 
+                SET status = :st, rejection_reason = :rs 
+                WHERE id = :ti";
         $this->stmt = $this->conn->prepare($sql);
+        $this->stmt->bindParam(":rs", $rejectionReason);
         $this->stmt->bindParam(":st", $status);
         $this->stmt->bindParam(":ti", $taskId);
 
@@ -193,7 +197,9 @@ class Task
         return false;
     }
 
-    public function insertAttachment($taskId, $userId, $fileName, $fileType, $fileSize, $filepath) {
+
+    public function insertAttachment($taskId, $userId, $fileName, $fileType, $fileSize, $filepath)
+    {
         $this->conn = Connection::connect();
 
         $sql = "INSERT INTO attachments (task_id, uploaded_by, file_name, file_type, file_size, file_path, uploaded_at) VALUES (:ti, :ub, :fn, :ft, :fs, :fp, NOW())";
@@ -212,7 +218,8 @@ class Task
         return false;
     }
 
-    public function fetchAttachment ($taskId) {
+    public function fetchAttachment($taskId)
+    {
         $this->conn = Connection::connect();
 
         $sql = "SELECT * FROM attachments WHERE task_id = :ti";
@@ -221,14 +228,15 @@ class Task
         $this->stmt->execute();
         $row = $this->stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        if($row) {
+        if ($row) {
             return $row;
         }
 
         return [];
     }
 
-    public function insertComment ($taskId, $userId, $commentText) {
+    public function insertComment($taskId, $userId, $commentText)
+    {
         $this->conn = Connection::connect();
 
         $sql = "INSERT INTO comments (task_id, created_by, comment_text, created_at, updated_at) VALUES (:ti, :cb, :ct, NOW(), NOW())";
@@ -244,7 +252,8 @@ class Task
         return false;
     }
 
-    public function fetchComments ($taskId) {
+    public function fetchComments($taskId)
+    {
         $this->conn = Connection::connect();
 
         $sql = "SELECT id, task_id, created_by, comment_text, updated_at FROM comments WHERE task_id = :ti";

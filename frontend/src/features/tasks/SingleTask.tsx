@@ -44,12 +44,13 @@ const SingleTask = () => {
   const { role } = useOutletContext<OutletContextType>();
   const { user } = useSelector((state: RootState) => state.auth);
   const userId = user?.id ? user.id : "";
-  const { taskId = "" } = useParams()
-  const { workspaceId = ""} = useParams()
+  const { taskId = "" } = useParams();
+  const { workspaceId = "" } = useParams();
 
   const { data, isLoading, isSuccess, isError, error } =
     useGetTaskByIdQuery(taskId);
-  const [ updateTaskStatus, { isLoading: starting }] = useUpdateTaskStatusMutation();
+  const [updateTaskStatus, { isLoading: starting }] =
+    useUpdateTaskStatusMutation();
 
   const [open, setOpen] = useState(false);
   const [fileOpen, setFileOpen] = useState(false);
@@ -59,7 +60,7 @@ const SingleTask = () => {
   const comments = data?.data.comments; //comments array
 
   const isMember = data?.data.members.some((member) => member.id === userId);
-  console.log("ismember", isMember)
+  console.log("ismember", isMember);
 
   const getStatusClasses = (status: string | undefined) => {
     switch (status) {
@@ -73,7 +74,10 @@ const SingleTask = () => {
   };
 
   //handle the add attachment and post comment button (diable when the task hasn't started, when the task is pending and completed)
-  const isActionDisabled = data?.data.status === 'To Do' || data?.data.status === 'Pending' || data?.data.status === 'Completed'
+  const isActionDisabled =
+    data?.data.status === "To Do" ||
+    data?.data.status === "Pending" ||
+    data?.data.status === "Completed";
 
   const getAttachmentUploadMember = (id: string) => {
     const uploadBy = members?.find((member) => member.id === id);
@@ -85,7 +89,7 @@ const SingleTask = () => {
   };
 
   const handleStatus = (status: string) => {
-    updateTaskStatus({taskId, status, workspaceId})
+    updateTaskStatus({ taskId, status, workspaceId });
   };
 
   const handleFile = () => {
@@ -255,6 +259,7 @@ const SingleTask = () => {
           userId={userId}
           workspaceId={workspaceId}
         />
+
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-6 bg-white shadow">
           <div className="flex flex-row items-center gap-3">
@@ -279,12 +284,12 @@ const SingleTask = () => {
               {data?.data.priority_level}
             </Badge>
           </div>
-          {(isMember || role === 'admin') && (
+          {(isMember || role === "admin") && (
             <div className="flex flex-wrap gap-2">
               {data.data.status === "To Do" ? (
                 <Button
                   className="bg-green-600 hover:bg-green-700"
-                  onClick={() => handleStatus('In Progress')}
+                  onClick={() => handleStatus("In Progress")}
                 >
                   {starting ? "Starting" : "Start Task"}
                 </Button>
@@ -304,13 +309,23 @@ const SingleTask = () => {
                       <DeleteButton label="Task" id={Number(taskId)} />
                     </>
                   )}
-                  <Button variant="default" onClick={() => handleStatus('Pending')} disabled = {data.data.status === 'To Do' || data.data.status === 'Pending'}>Mark Complete</Button>
+                  <Button
+                    variant="default"
+                    onClick={() => handleStatus("Pending")}
+                    disabled={
+                      data.data.status === "To Do" ||
+                      data.data.status === "Pending"
+                    }
+                  >
+                    Mark Complete
+                  </Button>
                 </PopoverContent>
               </Popover>
             </div>
           )}
         </div>
 
+        { data?.data.rejection_reason && <span className="text-destructive text-center mt-6">Rejection Reason: {data?.data.rejection_reason}</span>}
         {/* Main Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
           {/* Left Column */}
@@ -342,8 +357,13 @@ const SingleTask = () => {
             <Card>
               <CardHeader className="flex items-center justify-between">
                 <CardTitle>Attachments</CardTitle>
-                {(isMember || role === 'admin') && (
-                  <Button size="sm" variant="outline" onClick={handleFile} disabled={isActionDisabled}>
+                {(isMember || role === "admin") && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleFile}
+                    disabled={isActionDisabled}
+                  >
                     Add Attachment
                   </Button>
                 )}
@@ -398,18 +418,18 @@ const SingleTask = () => {
                   <div key={comment.id} className="flex gap-3">
                     <Avatar className="h-10 w-10">
                       <AvatarImage
-                        src= {`${backendURL}/${comment.user.profile_url}`}
+                        src={`${backendURL}/${comment.user.profile_url}`}
                         alt={comment.user.username}
                       />
                       <AvatarFallback>CN</AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col">
                       <div className="flex items-center gap-2 text-sm">
-                        <span className="font-semibold">{comment.user.username}</span>
+                        <span className="font-semibold">
+                          {comment.user.username}
+                        </span>
                         <span className="text-gray-400 text-xs">
-                          {new Date(
-                              comment.updated_at
-                            ).toLocaleDateString()}
+                          {new Date(comment.updated_at).toLocaleDateString()}
                         </span>
                       </div>
                       <p className="text-gray-700 text-sm">
@@ -419,7 +439,7 @@ const SingleTask = () => {
                   </div>
                 ))}
               </CardContent>
-              {(isMember || role === 'admin') && (
+              {(isMember || role === "admin") && (
                 <form onSubmit={handleComment}>
                   <CardFooter className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
                     <Textarea

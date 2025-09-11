@@ -100,6 +100,7 @@ const Notifications = () => {
           "Task Update": "bg-chart-2 text-background",
           "Deadline Warning": "bg-chart-5 text-background",
           "Deadline Missed": "bg-destructive text-foreground",
+          "Role Change": "bg-chart-3 text-foreground",
         };
 
         let timeAgo = ''

@@ -256,8 +256,13 @@ class taskController
         $workspaceId = $data['workspaceId'];
         $userId = $_SESSION['userId'];
 
+        $rejectionReason = $data['rejectionReason'] ?? null;
         try {
-            $this->task->updateStatus($taskId, $status);
+            if (!empty($rejectionReason)) {
+                $this->task->updateStatus($taskId, $status, $rejectionReason);
+            } else {
+                $this->task->updateStatus($taskId, $status);
+            }
 
             $taskDetail = $this->task->fetchTaskById($taskId);
             $workspaceDetail = $this->workspace->fetchWorkspaceById($workspaceId, $userId);

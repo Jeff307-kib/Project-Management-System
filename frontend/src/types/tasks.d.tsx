@@ -5,6 +5,7 @@ export interface Task {
   status: string,
   due_date: string,
   priority_level: string,
+  rejection_reason?: string,
   members: TaskAssignee[] | []
   attachments?: Attachments[] | []
   comments: Comment[] | []
@@ -91,4 +92,5 @@ export interface UpdateStatus {
   taskId: string,
   status: string,
   workspaceId: string,
+  rejectionReason?: string,
 }

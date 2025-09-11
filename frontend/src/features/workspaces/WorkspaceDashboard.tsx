@@ -3,14 +3,6 @@ import { MoreVertical } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
   Popover,
   PopoverTrigger,
   PopoverContent,
@@ -20,8 +12,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -33,6 +23,7 @@ import DeleteButton from "@/features/utils/DeleteButton";
 import TasksTap from "@/features/tasks/TasksTap";
 import MembersTab from "@/features/users/MembersTab";
 import TaskModal from "@/features/tasks/TaskModal";
+import ReportTab from "@/features/workspaces/ReportTab";
 
 import { useGetWorkspaceByIdQuery } from "@/api/apiSlice";
 import { Outlet, useParams } from "react-router-dom";
@@ -46,7 +37,6 @@ const WorkspaceDashboard = () => {
 
   const { data, isLoading, isError, error, isSuccess } =
     useGetWorkspaceByIdQuery(workspaceIdNumber);
-  console.log("Workspace user role: ", data?.data.role);
 
   const role = data?.data.role ? data?.data.role : "";
 
@@ -142,28 +132,7 @@ const WorkspaceDashboard = () => {
         </TabsContent>
 
         <TabsContent value="report">
-          <Card className="border-0 rounded-none shadow-none">
-            <CardHeader>
-              <CardTitle>Report</CardTitle>
-              <CardDescription>
-                Change your password here. After saving, you&apos;ll be logged
-                out.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-6">
-              <div className="grid gap-3">
-                <Label htmlFor="tabs-demo-current">Current password</Label>
-                <Input id="tabs-demo-current" type="password" />
-              </div>
-              <div className="grid gap-3">
-                <Label htmlFor="tabs-demo-new">New password</Label>
-                <Input id="tabs-demo-new" type="password" />
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button>Save password</Button>
-            </CardFooter>
-          </Card>
+          <ReportTab />
         </TabsContent>
       </Tabs>
     );

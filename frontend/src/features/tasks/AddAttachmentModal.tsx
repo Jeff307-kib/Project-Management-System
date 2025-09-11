@@ -77,7 +77,7 @@ const AddAttachmentModal = ({ open, setOpen, taskId, userId, workspaceId }: Prop
               onChange={handleFileChange}
               required
             />
-
+  
             <Button type="submit">{isLoading ? 'Addding...' : 'Add Attachment'}</Button>
           </div>
         </form>
