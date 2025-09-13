@@ -2,6 +2,8 @@ import SummaryCard from "@/features/tasks/SummaryCard";
 import RejectionReasonModal from "@/features/workspaces/RejectionReasonModal";
 import { SuccessToast } from "@/features/utils/SuccessToast";
 import { ErrorToast } from "@/features/utils/ErrorToast";
+import TaskLineChart from "@/features/tasks/TaskLineChart";
+import TasksByAssignee from "@/features/tasks/TasksByAssignee";
 
 import {
   Table,
@@ -11,6 +13,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useParams } from "react-router-dom";
 import { useGetMembersQuery } from "@/api/apiSlice";
@@ -85,7 +94,7 @@ const ReportTab = () => {
       </div>
 
       {/* Pending Tasks Table */}
-      <div className="mt-6">
+      <div className="my-6">
         <h2 className="text-lg font-semibold mb-4">Pending Tasks</h2>
         <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
           <Table>
@@ -102,44 +111,40 @@ const ReportTab = () => {
             <TableBody>
               {visiblePendingTasks.length > 0 ? (
                 visiblePendingTasks.map((task, index) => (
-                  <>
-                    <TableRow
-                      key={task.id}
-                      className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                    >
-                      <TableCell>{index + 1}</TableCell>
-                      <TableCell className="font-medium">
-                        {task.title}
-                      </TableCell>
-                      <TableCell>{"Unassigned"}</TableCell>
-                      <TableCell>
-                        {new Date(task.due_date).toLocaleDateString() ?? "—"}
-                      </TableCell>
-                      <TableCell>{task.priority_level ?? "Normal"}</TableCell>
-                      <TableCell className="text-right space-x-2">
-                        <Button
-                          size="sm"
-                          variant="default"
-                          onClick={() => handleTaskApprove(task.id)}
-                        >
-                          Approve
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={handleRejectOpen}
-                        >
-                          Reject
-                        </Button>
-                      </TableCell>
-                    </TableRow>
+                  <TableRow
+                    key={task.id}
+                    className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    <TableCell>{index + 1}</TableCell>
+                    <TableCell className="font-medium">{task.title}</TableCell>
+                    <TableCell>{"Unassigned"}</TableCell>
+                    <TableCell>
+                      {new Date(task.due_date).toLocaleDateString() ?? "—"}
+                    </TableCell>
+                    <TableCell>{task.priority_level ?? "Normal"}</TableCell>
+                    <TableCell className="text-right space-x-2">
+                      <Button
+                        size="sm"
+                        variant="default"
+                        onClick={() => handleTaskApprove(task.id)}
+                      >
+                        Approve
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={handleRejectOpen}
+                      >
+                        Reject
+                      </Button>
+                    </TableCell>
                     <RejectionReasonModal
                       rejectOpen={rejectOpen}
                       handleRejectOpen={handleRejectOpen}
                       taskId={task.id}
                       workspaceId={workspaceId}
                     />
-                  </>
+                  </TableRow>
                 ))
               ) : (
                 <TableRow>
@@ -167,6 +172,21 @@ const ReportTab = () => {
             </div>
           )}
         </div>
+      </div>
+      <TaskLineChart workspaceId = {workspaceId}/>
+      <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <TasksByAssignee workspaceId = {workspaceId}/>
+        <Card>
+          <CardHeader>
+            <CardTitle>Coming Soon</CardTitle>
+            <CardDescription>
+              Another report (e.g. Tasks by Priority)
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-500">Placeholder for future chart</p>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
