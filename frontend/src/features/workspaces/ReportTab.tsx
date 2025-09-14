@@ -4,6 +4,7 @@ import { SuccessToast } from "@/features/utils/SuccessToast";
 import { ErrorToast } from "@/features/utils/ErrorToast";
 import TaskLineChart from "@/features/tasks/TaskLineChart";
 import TasksByAssignee from "@/features/tasks/TasksByAssignee";
+import PriorityPieChart from "@/features/tasks/PriorityPieChart";
 
 import {
   Table,
@@ -13,13 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+
 import { Button } from "@/components/ui/button";
 import { useParams } from "react-router-dom";
 import { useGetMembersQuery } from "@/api/apiSlice";
@@ -176,17 +171,7 @@ const ReportTab = () => {
       <TaskLineChart workspaceId = {workspaceId}/>
       <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
         <TasksByAssignee workspaceId = {workspaceId}/>
-        <Card>
-          <CardHeader>
-            <CardTitle>Coming Soon</CardTitle>
-            <CardDescription>
-              Another report (e.g. Tasks by Priority)
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-500">Placeholder for future chart</p>
-          </CardContent>
-        </Card>
+        <PriorityPieChart workspaceId = {workspaceId}/>
       </div>
     </div>
   );
