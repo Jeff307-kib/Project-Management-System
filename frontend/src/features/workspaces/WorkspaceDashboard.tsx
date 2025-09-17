@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { MoreVertical } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -12,11 +12,20 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
+import { ListFilter, ArrowLeft } from "lucide-react";
 
 import AddButton from "@/features/utils/AddButton";
-import SearchBox from "@/features/utils/SearchBox";
 import EditButton from "@/features/utils/EditButton";
 import WorkspaceModal from "@/features/workspaces/WorkspaceModal";
 import DeleteButton from "@/features/utils/DeleteButton";
@@ -26,6 +35,7 @@ import TaskModal from "@/features/tasks/TaskModal";
 import ReportTab from "@/features/workspaces/ReportTab";
 
 import { useGetWorkspaceByIdQuery } from "@/api/apiSlice";
+import { useGetTasksQuery } from "@/api/apiSlice";
 import { Outlet, useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
@@ -35,8 +45,7 @@ const WorkspaceDashboard = () => {
   const { workspaceId = "", taskId = "" } = useParams();
   const workspaceIdNumber = Number(workspaceId);
 
-  const { data, isLoading, isError, error, isSuccess } =
-    useGetWorkspaceByIdQuery(workspaceIdNumber);
+  const { data } = useGetWorkspaceByIdQuery(workspaceIdNumber);
 
   const role = data?.data.role ? data?.data.role : "";
 
@@ -65,6 +74,33 @@ const WorkspaceDashboard = () => {
   const workspaceName =
     name && name.length > 45 ? name.substring(0, 45) + "..." : name;
 
+  //handle search and filter
+  const {
+    data: tasks,
+    isLoading,
+    isSuccess,
+    isError,
+    error,
+  } = useGetTasksQuery(workspaceId);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("All");
+  const filteredTasks = useMemo(() => {
+    if (!tasks?.data) return [];
+
+    let list = [...tasks.data];
+
+    if (filterStatus !== "All") {
+      list = list.filter((task) => task.status === filterStatus);
+    }
+
+    if (searchTerm) {
+      list = list.filter((task) =>
+        task.title.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    return list;
+  }, [tasks?.data, searchTerm, filterStatus]);
+
   let content;
   if (isLoading) {
     content = (
@@ -79,6 +115,15 @@ const WorkspaceDashboard = () => {
       <Tabs defaultValue="tasks">
         {!taskId && (
           <div className=" w-full flex justify-end p-6 shadow">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => navigate(-1)}
+              className="flex items-center space-x-2 text-sm text-gray-500 transition-colors cursor-pointer"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span>Go Back</span>
+            </Button>
             <Tooltip>
               <TooltipTrigger>
                 <Link to="/workspace">
@@ -88,13 +133,13 @@ const WorkspaceDashboard = () => {
                 </Link>
               </TooltipTrigger>
               <TooltipContent>
-                <p>{data.data.name}</p>
+                <p>{data?.data.name}</p>
               </TooltipContent>
             </Tooltip>
             <WorkspaceModal
               isOpen={isOpen}
               setOpen={setOpen}
-              workspace={data.data}
+              workspace={data?.data}
               label={label}
             />
             <TaskModal
@@ -102,11 +147,63 @@ const WorkspaceDashboard = () => {
               taskOpen={isTaskOpen}
               setTaskOpen={setTaskOpen}
             />
-            <SearchBox />
+            <div className="flex-1 flex justify-center items-center space-x-2">
+              <div className="relative w-full max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Search workspaces..."
+                  className="w-full pl-9 bg-background focus:bg-card"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="flex items-center gap-2">
+                    <ListFilter />
+                    <span>{filterStatus}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => setFilterStatus("All")}>
+                    All
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => setFilterStatus("Completed")}
+                  >
+                    Completed
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setFilterStatus("Pending")}>
+                    Pending
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setFilterStatus("To Do")}>
+                    To Do
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => setFilterStatus("In Progress")}
+                  >
+                    In Progress
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => setFilterStatus("Needs Revision")}
+                  >
+                    Needs Revision
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
             <TabsList className="mr-4">
               <TabsTrigger value="tasks">Tasks</TabsTrigger>
               <TabsTrigger value="members">Members</TabsTrigger>
-              { role === 'admin' && <TabsTrigger value="report">Report</TabsTrigger>}
+              {role === "admin" && (
+                <TabsTrigger value="report">Report</TabsTrigger>
+              )}
             </TabsList>
             {role === "admin" && (
               <Popover>
@@ -125,7 +222,15 @@ const WorkspaceDashboard = () => {
           </div>
         )}
         <TabsContent value="tasks">
-          {taskId ? <Outlet context={{role}}/> : <TasksTap />}
+          {taskId ? (
+            <Outlet context={{ role }} />
+          ) : (
+            <TasksTap
+              tasks={filteredTasks}
+              isLoading={isLoading}
+              isError={isError}
+            />
+          )}
         </TabsContent>
         <TabsContent value="members">
           <MembersTab role={role} />

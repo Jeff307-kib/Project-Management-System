@@ -1,27 +1,22 @@
 import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
-import { TabsContent } from "@/components/ui/tabs";
-import { useGetTasksQuery } from "@/api/apiSlice";
 import TaskExcerpt from "@/features/tasks/TaskExcerpt";
+import type { Task } from "@/types/tasks.d";
 
-const TasksTap = () => {
+interface Props {
+  tasks: Task[],
+  isLoading: boolean,
+  isError: boolean,
+}
+
+const TasksTap = ({tasks, isLoading, isError}: Props) => {
   const navigate = useNavigate();
   const { workspaceId = ''} = useParams();
 
   if (!workspaceId) {
     navigate("/workspace");
   }
-
-  console.log("Workspace Id: ", workspaceId);
-  const {
-    data: tasks,
-    isLoading,
-    isSuccess,
-    isError,
-    error,
-  } = useGetTasksQuery(workspaceId);
-  console.log("Tasks", tasks)
 
   let content;
   if (isLoading) {
@@ -32,19 +27,15 @@ const TasksTap = () => {
         <Skeleton className="w-full h-32" />
       </div>
     );
-  } else if (isSuccess) {
-    if (tasks.data.length > 0) {
-      content = tasks.data.map((task) => {
+  } else if (isError) {
+      content = <p>An Unexpected error occured.</p>;
+  } else {
+    if (tasks.length > 0) {
+      content = tasks.map((task) => {
         return <TaskExcerpt key={task.id} taskData={task} />;
       });
     } else {
       content = <p>No Task Available! Create one to get Started!</p>;
-    }
-  } else if (isError) {
-    if ("status" in error) {
-      content = <p>Error: {error.status}</p>;
-    } else {
-      content = <p>An Unexpected error occured.</p>;
     }
   }
   return (
