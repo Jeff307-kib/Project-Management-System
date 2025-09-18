@@ -8,7 +8,8 @@ import LoadingScreen from "@/features/utils/LoadingScreen";
 import UserProfile from "@/features/users/UserProfile";
 import ResetPasswordForm from "@/features/users/ResetPasswordForm";
 import SingleTask from "@/features/tasks/SingleTask";
-import Test from "./features/utils/Test";
+import Test from "@/features/utils/Test";
+import UserDashboard from "@/features/users/UserDashboard";
 
 import { Routes, Route } from "react-router-dom";
 import { Toaster } from "sonner";
@@ -56,6 +57,7 @@ const App = () => {
             </Route>
             <Route path="user">
               <Route index element={<UserProfile />} />
+              <Route path="dashboard" element={<UserDashboard />} />
             </Route>
           </Route>
         </Route>

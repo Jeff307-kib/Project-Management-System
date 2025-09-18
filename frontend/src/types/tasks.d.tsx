@@ -94,3 +94,26 @@ export interface UpdateStatus {
   workspaceId: string,
   rejectionReason?: string,
 }
+
+export interface UserTask {
+  id: string,
+  title: string,
+  description: string,
+  status: string,
+  due_date: string,
+  created_at: string,
+  updated_at: string,
+  priority_level: string,
+  created_by: string,
+  workspace_id: string,
+  rejection_reason: string | null,
+  task_id: string,
+  user_id: string,
+  workspace_name: string,
+}
+
+export interface GetUserTasksResponse {
+  success: true,
+  message: string,
+  data: UserTask[] | [],
+}

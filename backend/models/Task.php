@@ -268,4 +268,24 @@ class Task
 
         return [];
     }
+
+    public function fetchUserTasks($userId) {
+        $this->conn = Connection::connect();
+
+        $sql = "
+            SELECT * FROM tasks t
+            JOIN task_assignees ta ON ta.task_id = t.id
+            WHERE ta.user_id = :ui
+        ";
+        $this->stmt = $this->conn->prepare($sql);
+        $this->stmt->bindParam(":ui", $userId);
+        $this->stmt->execute();
+        $row = $this->stmt->fetchALL(PDO::FETCH_ASSOC);
+
+        if ($row) {
+            return $row;
+        }
+
+        return[];
+    }
 }

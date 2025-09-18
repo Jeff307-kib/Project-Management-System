@@ -416,4 +416,32 @@ class taskController
 
         return true;
     }
+
+    function getUserTasks() {
+        if (empty($_GET['userId'])) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Missing User Id!']);
+            return;
+        }
+
+        try {
+            $userId = $_GET['userId'];
+
+            $tasks = $this->task->fetchUserTasks($userId);
+            
+            foreach($tasks as $key => $task) {
+                $workspace = $this->workspace->fetchWorkspaceById($task['workspace_id'], $userId);
+                $tasks[$key]['workspace_name'] = $workspace['name'];
+            }
+
+            echo json_encode([
+                'success' => true,
+                'message' => 'Tasks Fetched Successfully!',
+                'data' => $tasks,
+            ]);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => "Unexpected Error Occured: " . $e->getMessage()]);
+        }
+    }
 }

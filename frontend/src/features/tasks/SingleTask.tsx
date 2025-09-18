@@ -314,7 +314,8 @@ const SingleTask = () => {
                     onClick={() => handleStatus("Pending")}
                     disabled={
                       data.data.status === "To Do" ||
-                      data.data.status === "Pending"
+                      data.data.status === "Pending" ||
+                      data.data.status === "Completed" 
                     }
                   >
                     Mark Complete

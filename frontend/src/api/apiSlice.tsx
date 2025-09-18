@@ -29,6 +29,7 @@ import type {
   EditTask,
   AddComment,
   UpdateStatus,
+  GetUserTasksResponse,
   } from "@/types/tasks.d";
 
 
@@ -200,6 +201,10 @@ export const apiSlice = createApi({
       }),
       providesTags: ["Task"],
     }),
+    getUserTasks: builder.query<GetUserTasksResponse, string>({
+      query: (userId) => `getUserTasks.php?userId=${userId}`,
+      providesTags: ["Task"],
+    }),
     addTask: builder.mutation<TaskMutationResponse, AddTask>({
       query: (task) => ({
         url: "addTask.php",
@@ -295,6 +300,7 @@ export const {
   useDeleteNotificationMutation,
   useGetMembersQuery,
   useGetTasksQuery,
+  useGetUserTasksQuery,
   useAddTaskMutation,
   useGetTaskByIdQuery,
   useEditTaskMutation,
