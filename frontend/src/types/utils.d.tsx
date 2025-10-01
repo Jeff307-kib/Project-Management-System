@@ -1,4 +1,3 @@
-//For Add and Edit
 export interface ActionButtonProps {
     label: string,
     onClick: () => void,
@@ -13,8 +12,9 @@ export interface EditButtonProps {
     label: string,
 }
 
-export type FilterType = "date" | "alphabet"
+export type FilterType = "Date" | "Alphabet"
 
 export type FilterProps = {
+    filterType: string,
     onFilterChange: (value: FilterType) => void,
 }

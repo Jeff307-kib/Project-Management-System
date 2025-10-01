@@ -17,6 +17,7 @@ import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { setCredentials } from "@/features/users/authSlice";
 import { useUpdateProfileMutation } from "@/api/apiSlice";
 import { SuccessToast } from "@/features/utils/SuccessToast";
@@ -26,6 +27,7 @@ import ForgotPassword from "@/features/users/ForgotPassword";
 
 const UserProfile = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const { user } = useSelector((state: RootState) => state.auth);
 
@@ -163,11 +165,11 @@ const UserProfile = () => {
         <Button
           type="button"
           variant="ghost"
-          onClick={() => (window.location.href = "/workspace")}
+          onClick={() => (navigate(-1))}
           className="flex items-center space-x-2 text-sm text-gray-500 transition-colors cursor-pointer"
         >
           <ArrowLeft className="h-4 w-4" />
-          <span>Back to Workspace</span>
+          <span>Go Back</span>
         </Button>
       </div>
 

@@ -75,9 +75,9 @@ const LogInTab = () => {
           <CardContent className="grid gap-6">
             {formError && <p className="text-destructive">{formError}</p>}
             <div className="grid gap-3">
-              <Label htmlFor="credential">Username or Email</Label>
+              <Label htmlFor="credential">Enter Email</Label>
               <Input
-                type="text"
+                type="email"
                 id="credential"
                 name="credential"
                 value={credential}

@@ -37,3 +37,9 @@ export interface ResetPassword {
     token: string,
     password: string,
 }
+
+export interface ChangeRole {
+    workspaceId: string,
+    memberId: string,
+    role?: string,
+}
