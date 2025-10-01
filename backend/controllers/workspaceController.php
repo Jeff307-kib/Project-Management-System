@@ -3,18 +3,21 @@ require_once '../config/authCheck.php';
 include_once '../models/Workspace.php';
 include_once '../models/User.php';
 include_once '../models/Notification.php';
+include_once '../models/Task.php';
 
 class workspaceController
 {
     private $workspace;
     private $user;
     private $noti;
+    private $task;
 
     function __construct()
     {
         $this->workspace = new Workspace();
         $this->user = new User();
         $this->noti = new Notification();
+        $this->task = new Task();
     }
 
     function getWorkspaces()
@@ -22,6 +25,22 @@ class workspaceController
         $userId = $_SESSION['userId'];
         try {
             $workspaces = $this->workspace->fetchWorkspaces($userId);
+
+            foreach ($workspaces as $key => $workspace) {
+                $tasks = $this->task->fetchTasks($workspace['id']);
+                $taskCount = count($tasks);
+
+                $completedTasks = 0;
+                foreach ($tasks as $task) {
+                    if ($task['status'] === 'Completed') $completedTasks++;
+                }
+
+                $members = $this->workspace->fetchMembers($workspace['id']);
+
+                $workspaces[$key]['taskCount'] = $taskCount;
+                $workspaces[$key]['completedTasks'] = $completedTasks;
+                $workspaces[$key]['members'] = $members;
+            }
 
             if (empty($workspaces)) {
                 echo json_encode([
@@ -284,7 +303,8 @@ class workspaceController
         }
     }
 
-    function removeMember() {
+    function removeMember()
+    {
         $data = json_decode(file_get_contents("php://input"), true);
 
         if (empty($data['workspaceId'])  || empty($data['memberId'])) {
@@ -311,6 +331,30 @@ class workspaceController
             echo json_encode([
                 'success' => true,
                 'message' => "Member Removed Successfully!",
+            ]);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Unexpected Error Occured.' . $e->getMessage()]);
+        }
+    }
+
+    function getMemberPerformance()
+    {
+        if (!isset($_GET['workspaceId'])) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Missing Workspace ID!']);
+            return;
+        }
+
+        try {
+            $workspaceId = $_GET['workspaceId'];
+
+            $performance = $this->workspace->getMemberPerformance($workspaceId);
+
+            echo json_encode([
+                'success' => true,
+                'message' => 'Peformance Data Fetched Successfully!',
+                'data' => $performance,
             ]);
         } catch (Exception $e) {
             http_response_code(500);

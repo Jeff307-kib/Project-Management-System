@@ -36,13 +36,13 @@ import { useGetMembersQuery } from "@/api/apiSlice";
 import { useChangeMemberRoleMutation } from "@/api/apiSlice";
 import { useRemoveMemberMutation } from "@/api/apiSlice";
 import { useParams } from "react-router-dom";
+import { useOutletContext } from "react-router-dom";
 
-type Props = {
-  role: string;
-};
+type OutletContextType = { role: string };
 
-const MembersTab = ({ role }: Props) => {
+const MembersTab = () => {
   const { workspaceId = "" } = useParams();
+  const { role } = useOutletContext<OutletContextType>();
   const backendURL = "http://localhost/projectManagementSystem/backend/public";
   const [isOpen, setIsOpen] = useState(false);
 
@@ -206,7 +206,7 @@ const MembersTab = ({ role }: Props) => {
             <CardDescription>Collaborate with your team</CardDescription>
           </div>
           {role === "admin" && (
-            <AddButton label="Invite Member" onClick={handleOpen} />
+            <AddButton label="Member" onClick={handleOpen} />
           )}
         </CardHeader>
         <CardContent>

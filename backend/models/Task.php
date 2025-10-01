@@ -288,4 +288,18 @@ class Task
 
         return[];
     }
+
+    public function fetchMemberTasks($userId, $workspaceId) {
+        $this->conn = Connection::connect();
+
+        $sql = "
+            SELECT * FROM tasks t
+            JOIN task_assignees ta ON ta.task_id = t.task_id
+            WHERE ta.user_id = :ui AND
+            t.workspace_id = :wi
+        ";
+        $this->stmt = $this->conn->prepare($sql);
+        $this->stmt->bindParam(":ui", $userId);
+        $this->stmt->bindParam(":wi", $workspaceId);
+    }
 }

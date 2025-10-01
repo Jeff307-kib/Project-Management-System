@@ -113,7 +113,7 @@ const TaskExcerpt = ({ taskData }: Props) => {
   return (
     <div
       className="group flex flex-col justify-between rounded-lg border bg-card text-card-foreground shadow-sm transition-shadow hover:shadow-md w-72 cursor-pointer overflow-hidden"
-      onClick={() => navigate(`tasks/${taskData.id}`)}
+      onClick={() => navigate(`${taskData.id}`)}
     >
       <div className="flex items-start justify-between p-4">
         <div className="space-y-1.5">

@@ -9,6 +9,7 @@ import type {
   Invitation,
   getNotificationResponse,
   GetMembersResponse,
+  GetMemberPerformanceResponse,
 } from "@/types/workspace.d";
 
 import type {
@@ -276,6 +277,11 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ['Member'],
     }),
+    getmemberPeformance: builder.query<GetMemberPerformanceResponse, string>({
+      query: (workspaceId) => `getMemberPerformance.php?workspaceId=${workspaceId}`,
+      providesTags: ['Member'],
+    }),
+
   }),
 });
 
@@ -310,4 +316,5 @@ export const {
   useAddCommentMutation,
   useChangeMemberRoleMutation,
   useRemoveMemberMutation,
+  useGetmemberPeformanceQuery,
 } = apiSlice;

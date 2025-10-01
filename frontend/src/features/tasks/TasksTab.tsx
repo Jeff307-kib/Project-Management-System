@@ -3,16 +3,21 @@ import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import TaskExcerpt from "@/features/tasks/TaskExcerpt";
 import type { Task } from "@/types/tasks.d";
+import { useOutletContext } from "react-router-dom";
 
-interface Props {
-  tasks: Task[],
-  isLoading: boolean,
-  isError: boolean,
-}
+type OutletContextType = {
+  role: string;
+  filteredTasks: Task[];
+  isLoading: boolean;
+  isError: boolean;
+};
 
-const TasksTap = ({tasks, isLoading, isError}: Props) => {
+const TasksTab = () => {
+  const { filteredTasks, isLoading, isError } = useOutletContext<OutletContextType>();
+  console.log("TasksTap", filteredTasks);
   const navigate = useNavigate();
   const { workspaceId = ''} = useParams();
+  console.log("I've reached the tasks tab.");
 
   if (!workspaceId) {
     navigate("/workspace");
@@ -30,8 +35,8 @@ const TasksTap = ({tasks, isLoading, isError}: Props) => {
   } else if (isError) {
       content = <p>An Unexpected error occured.</p>;
   } else {
-    if (tasks.length > 0) {
-      content = tasks.map((task) => {
+    if (filteredTasks.length > 0) {
+      content = filteredTasks.map((task) => {
         return <TaskExcerpt key={task.id} taskData={task} />;
       });
     } else {
@@ -47,4 +52,4 @@ const TasksTap = ({tasks, isLoading, isError}: Props) => {
   );
 };
 
-export default TasksTap;
+export default TasksTab;

@@ -1,15 +1,17 @@
 import Layout from "./components/Layout";
 import WorkspaceList from "./features/workspaces/WorkspaceList";
 import WorkspaceDashboard from "./features/workspaces/WorkspaceDashboard";
-import Welcome from "./Welcome";
-import Registration from "@/pages/Registration";
+import Registration from "@/features/utils/Registration";
 import ProtectedRoute from "@/features/utils/ProtectedRoute";
-import LoadingScreen from "@/features/utils/LoadingScreen";
 import UserProfile from "@/features/users/UserProfile";
 import ResetPasswordForm from "@/features/users/ResetPasswordForm";
 import SingleTask from "@/features/tasks/SingleTask";
-import Test from "@/features/utils/Test";
 import UserDashboard from "@/features/users/UserDashboard";
+import MembersTab from "@/features/users/MembersTab";
+import ReportTab from "@/features/workspaces/ReportTab";
+import TasksTab from "@/features/tasks/TasksTab";
+import NotFoundPage from "@/features/utils/NotFoundPage";
+import Loading from "./features/utils/Loading";
 
 import { Routes, Route } from "react-router-dom";
 import { Toaster } from "sonner";
@@ -34,16 +36,15 @@ const App = () => {
   }, [isSuccess, sessionData, dispatch, isLoading]);
 
   if (isLoading || !isAuthReady) {
-    return <LoadingScreen />;
+    return <Loading />;
   }
 
   return (
     <>
       <Routes>
-        <Route path="registration" element={<Registration />} />
-        <Route path="/" element={<Welcome />} />
+        <Route path="/" element={<Registration />} />
         <Route path="reset-password" element={<ResetPasswordForm />} />
-        <Route path="test" element={<Test />} />
+        <Route path="test" element={<Loading />} />
 
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<Layout />}>
@@ -51,9 +52,12 @@ const App = () => {
               <Route index element={<WorkspaceList />} />
               <Route path=":workspaceId" element={<WorkspaceDashboard />}>
                 <Route path="tasks">
+                  <Route index element={<TasksTab />} />
                   <Route path=":taskId" element={<SingleTask />} />
                 </Route>
-              </Route>  
+                <Route path="members" element={<MembersTab />} />
+                <Route path="report" element={<ReportTab />} />
+              </Route>
             </Route>
             <Route path="user">
               <Route index element={<UserProfile />} />
@@ -61,6 +65,9 @@ const App = () => {
             </Route>
           </Route>
         </Route>
+
+        {/* Catch-all 404 Route */}
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
       <Toaster richColors closeButton className="[&>div]:w-[var(--width)]" />
     </>

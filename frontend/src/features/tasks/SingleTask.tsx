@@ -19,8 +19,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft } from "lucide-react";
-import { MoreVertical } from "lucide-react";
+import { ArrowLeft, MoreVertical } from "lucide-react";
+
 
 import { useGetTaskByIdQuery } from "@/api/apiSlice";
 import { useUpdateTaskStatusMutation } from "@/api/apiSlice";
@@ -262,7 +262,7 @@ const SingleTask = () => {
 
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-6 bg-white shadow">
-          <div className="flex flex-row items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <Button
               type="button"
               variant="ghost"
@@ -272,7 +272,7 @@ const SingleTask = () => {
               <ArrowLeft className="h-4 w-4" />
               <span>Go Back</span>
             </Button>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-bold text-gray-900 mt-2 sm:mt-0">
               {data?.data.title}
             </h1>
             <Badge
@@ -315,7 +315,7 @@ const SingleTask = () => {
                     disabled={
                       data.data.status === "To Do" ||
                       data.data.status === "Pending" ||
-                      data.data.status === "Completed" 
+                      data.data.status === "Completed"
                     }
                   >
                     Mark Complete
@@ -326,10 +326,13 @@ const SingleTask = () => {
           )}
         </div>
 
-        { data?.data.rejection_reason && <span className="text-destructive text-center mt-6">Rejection Reason: {data?.data.rejection_reason}</span>}
-        {/* Main Grid */}
+        {data?.data.rejection_reason && (
+          <span className="text-destructive text-center mt-6">
+            Rejection Reason: {data?.data.rejection_reason}
+          </span>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
-          {/* Left Column */}
           <div className="md:col-span-2 flex flex-col gap-6">
             {/* Details Card */}
             <Card>
@@ -463,14 +466,13 @@ const SingleTask = () => {
             </Card>
           </div>
 
-          {/* Right Column */}
           <div className="md:col-span-1 flex flex-col gap-6">
             {/* Calendar Preview */}
             <Card>
               <CardHeader>
                 <CardTitle>Task Calendar</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="overflow-x-auto">
                 <Calendar mode="single" className="w-full" />
               </CardContent>
             </Card>
@@ -480,10 +482,13 @@ const SingleTask = () => {
               <CardHeader>
                 <CardTitle>Assigned Members</CardTitle>
               </CardHeader>
-              <CardContent className="flex flex-col gap-3">
+              <CardContent className="flex flex-col gap-3 overflow-x-auto">
                 {members?.map((member) => (
-                  <div key={member.id} className="flex items-center gap-2">
-                    <Avatar className="h-10 w-10">
+                  <div
+                    key={member.id}
+                    className="flex items-center gap-2 flex-shrink-0 min-w-fit"
+                  >
+                    <Avatar className="h-10 w-10 shrink-0">
                       <AvatarImage
                         src={`${backendURL}/${member.profile_url}`}
                         alt={member.username}

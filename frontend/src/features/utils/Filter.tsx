@@ -27,9 +27,6 @@ const Filter = ({ onFilterChange, filterType }: FilterProps) => {
         <DropdownMenuItem onClick={() => onFilterChange("Alphabet")}>
           Alphabet
         </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem>Favourite</DropdownMenuItem>{" "}
-        {/* Would handle this later */}
       </DropdownMenuContent>
     </DropdownMenu>
   );

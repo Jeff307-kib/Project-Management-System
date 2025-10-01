@@ -5,6 +5,7 @@ import { ErrorToast } from "@/features/utils/ErrorToast";
 import TaskLineChart from "@/features/tasks/TaskLineChart";
 import TasksByAssignee from "@/features/tasks/TasksByAssignee";
 import PriorityPieChart from "@/features/tasks/PriorityPieChart";
+import MemberPerformanceTable from "./MemberPerformanceTable";
 
 import {
   Table,
@@ -16,8 +17,7 @@ import {
 } from "@/components/ui/table";
 
 import { Button } from "@/components/ui/button";
-import { useParams } from "react-router-dom";
-import { useGetMembersQuery } from "@/api/apiSlice";
+import { useParams, Link } from "react-router-dom";
 import { useGetTasksQuery } from "@/api/apiSlice";
 import { useUpdateTaskStatusMutation } from "@/api/apiSlice";
 import { useState } from "react";
@@ -26,7 +26,6 @@ const ReportTab = () => {
   const { workspaceId = "" } = useParams();
 
   const { data: tasks } = useGetTasksQuery(workspaceId);
-  const { data: members } = useGetMembersQuery(workspaceId);
 
   const totalTasks = tasks?.data.length;
   const completedTasks = tasks?.data.filter((task) => {
@@ -111,7 +110,7 @@ const ReportTab = () => {
                     className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
                     <TableCell>{index + 1}</TableCell>
-                    <TableCell className="font-medium">{task.title}</TableCell>
+                    <Link to={`/workspace/${workspaceId}/tasks/${task.id}`} className="text-blue-500 hover:underline cursor-pointer"><TableCell className="font-medium">{task.title}</TableCell></Link>
                     <TableCell>{"Unassigned"}</TableCell>
                     <TableCell>
                       {new Date(task.due_date).toLocaleDateString() ?? "—"}
@@ -168,10 +167,13 @@ const ReportTab = () => {
           )}
         </div>
       </div>
-      <TaskLineChart workspaceId = {workspaceId}/>
+      <TaskLineChart workspaceId={workspaceId} />
       <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-        <TasksByAssignee workspaceId = {workspaceId}/>
-        <PriorityPieChart workspaceId = {workspaceId}/>
+        <TasksByAssignee workspaceId={workspaceId} />
+        <PriorityPieChart workspaceId={workspaceId} />
+      </div>
+      <div className="my-6 overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+        <MemberPerformanceTable />
       </div>
     </div>
   );

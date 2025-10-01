@@ -7,6 +7,7 @@ import type { RootState } from "@/app/store";
 import { Popover, PopoverTrigger } from "@radix-ui/react-popover";
 import { useMarkNotificationReadMutation } from "@/api/apiSlice";
 import { useGetNotificationsQuery } from "@/api/apiSlice";
+import { Link } from "react-router-dom";
 
 const Header = () => {
   const user = useSelector((state: RootState) => state.auth.user);
@@ -42,7 +43,7 @@ const Header = () => {
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4">
       <div className="container flex h-14 max-w-screen-2xl items-center">
         <div className="mr-4 hidden md:flex">
-          <a className="mr-6 flex items-center space-x-2" href="/">
+          <Link className="mr-6 flex items-center space-x-2" to="/">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -58,7 +59,7 @@ const Header = () => {
             <span className="hidden font-bold sm:inline-block">
               ProjectFlow
             </span>
-          </a>
+          </Link>
         </div>
 
         <div className="flex flex-1 items-center justify-end space-x-4">

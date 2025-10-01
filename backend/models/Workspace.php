@@ -129,7 +129,6 @@
 
                 $this->conn->commit();
                 return true;
-
             } catch (Exception $e) {
                 $this->conn->rollBack();
                 return false;
@@ -153,7 +152,8 @@
             return false;
         }
 
-        public function insertMember($userId, $workspaceId) {
+        public function insertMember($userId, $workspaceId)
+        {
             $this->conn = Connection::connect();
 
             $sql = "INSERT INTO user_workspace (user_id, workspace_id, role, joined_at) VALUES (:ui, :wi, 'member', NOW())";
@@ -166,10 +166,10 @@
             }
 
             return false;
-            
         }
 
-        public function fetchMembers($workspaceId) {
+        public function fetchMembers($workspaceId)
+        {
             $this->conn = Connection::connect();
 
             $sql = "
@@ -188,8 +188,9 @@
 
             return [];
         }
- 
-        public function updateMemberRole($workspaceId, $memberId, $role) {
+
+        public function updateMemberRole($workspaceId, $memberId, $role)
+        {
             $this->conn = Connection::connect();
 
             $sql = "UPDATE user_workspace SET role = :ro WHERE workspace_id = :wi AND user_id = :mi";
@@ -220,10 +221,40 @@
 
                 $this->conn->commit();
                 return true;
-
             } catch (Exception $e) {
                 $this->conn->rollBack();
                 return false;
             }
+        }
+
+        public function getMemberPerformance($workspaceId)
+        {
+            $this->conn = Connection::connect();
+
+            $sql = "
+                SELECT 
+                    u.id,
+                    u.username AS MemberName,
+                    COUNT(DISTINCT t.id) AS TasksAssigned,
+                    SUM(CASE WHEN t.status='Completed' THEN 1 ELSE 0 END) AS TasksCompleted,
+                    SUM(CASE WHEN t.status='Needs Revision' THEN 1 ELSE 0 END) AS TasksRejected,
+                    ROUND(SUM(CASE WHEN t.status='completed' THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(DISTINCT t.id),0),2) AS CompletionRate
+                FROM users u
+                JOIN task_assignees ta ON u.id = ta.user_id
+                JOIN tasks t ON ta.task_id = t.id
+                WHERE t.workspace_id = :wid
+                GROUP BY u.id, u.username
+                ORDER BY TasksAssigned DESC;
+            ";
+            $this->stmt = $this->conn->prepare($sql);
+            $this->stmt->bindParam(":wid", $workspaceId);
+            $this->stmt->execute();
+            $row = $this->stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            if ($row) {
+                return $row;
+            }
+
+            return[];
         }
     }

@@ -40,7 +40,9 @@ const WorkspaceList = () => {
   const filteredWorkspaces = useMemo(() => {
     switch (filterType) {
       case "Alphabet":
-        return [...searchedWorkspaces].sort((a, b) => a.name.localeCompare(b.name));
+        return [...searchedWorkspaces].sort((a, b) =>
+          a.name.localeCompare(b.name)
+        );
       case "Date":
       default:
         return [...searchedWorkspaces].sort(
@@ -83,10 +85,13 @@ const WorkspaceList = () => {
 
   return (
     <>
-      <div className="flex items-center justify-between gap-4 border-b border-border/40 bg-background/95 px-6 py-3 mb-4 shadow-sm">
+      {/* Header bar */}
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/40 bg-background/95 px-6 py-3 mb-4 shadow-sm">
         <AddButton label="Workspace" onClick={handleAdd} />
         <WorkspaceModal isOpen={isAddOpen} setOpen={handleAdd} label="Create" />
-        <div className="flex-1 flex justify-center">
+
+        {/* Search bar */}
+        <div className="flex-1 flex justify-center order-last md:order-none w-full md:w-auto">
           <div className="relative w-full max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -98,10 +103,16 @@ const WorkspaceList = () => {
             />
           </div>
         </div>
+
         <Filter onFilterChange={setFilterType} filterType={filterType} />
       </div>
+
+      {/* Content grid */}
       <div className="flex justify-center">
-        <div className="grid gap-6 max-w-[1200px] grid-cols-[repeat(auto-fit,minmax(250px,1fr))]">
+        <div
+          className="grid gap-6 max-w-[1200px] 
+                    grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+        >
           {content}
         </div>
       </div>
