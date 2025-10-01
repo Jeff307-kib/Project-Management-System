@@ -3,6 +3,9 @@ export interface Workspace {
   name: string;
   created_at: string;
   description: string | null;
+  taskCount: number,
+  completedTasks: number,
+  members: Member[] | []
 }
 
 export interface GetWorkspacesResponse {
@@ -46,4 +49,54 @@ export interface GetWorkspaceByIdResponse {
   success: boolean;
   message: string;
   data: WorkspaceById
+}
+
+export interface Invitation {
+  email: string,
+  workspaceId: string,
+}
+
+export interface Notification {
+  id: string,
+  type: string,
+  status: string,
+  message: string,
+  created_at: string,
+  is_read: boolean,
+}
+
+export interface getNotificationResponse {
+  success: boolean,
+  message: string,
+  notifications: Notification[] | [],
+}
+
+export interface Member {
+  id: string,
+  username: string,
+  email: string,
+  profile_url: string,
+  role: string,
+  joined_at: string,
+}
+
+export interface GetMembersResponse {
+  success: boolean,
+  message: string,
+  data: Member[] | []
+}
+
+export interface GetMemberPerformanceResponse {
+  success: boolean,
+  message: string,
+  data: PerformanceData[]
+}
+
+export interface PerformanceData {
+  id: string,
+  MemberName: string,
+  TasksAssigned: string,
+  TasksCompleted: string,
+  TasksRejected: string,
+  CompletionRate: string,
 }

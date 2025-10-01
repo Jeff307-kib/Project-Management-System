@@ -35,9 +35,8 @@ class User
     public function fetchUser($credential, $password)
     {
         $this->conn = Connection::connect();
-        $sql = "SELECT * FROM users WHERE username = :un OR email = :em";
+        $sql = "SELECT * FROM users WHERE email = :em";
         $this->stmt = $this->conn->prepare($sql);
-        $this->stmt->bindParam("un", $credential);
         $this->stmt->bindParam("em", $credential);
 
         if (!$this->stmt->execute()) {
@@ -47,7 +46,7 @@ class User
         $row = $this->stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$row || !password_verify($password, $row['password'])) {
-            throw new Exception("Incorrect email, username or password.");
+            throw new Exception("Incorrect email or password.");
         }
 
         return $row;
@@ -56,7 +55,7 @@ class User
     public function fetchUserById($userId)
     {
         $this->conn = Connection::connect();
-        $sql = "SELECT id, username, email, profile_url, password FROM users WHERE id = :ui";
+        $sql = "SELECT id, username, email, profile_url FROM users WHERE id = :ui";
         $this->stmt = $this->conn->prepare($sql);
         $this->stmt->bindParam(":ui", $userId);
         $this->stmt->execute();
@@ -73,7 +72,6 @@ class User
     {
         $this->conn = Connection::connect();
 
-
         $sqlCheckEmail = "SELECT id FROM users WHERE email = :em AND id != :ui";
         $stmtCheckEmail = $this->conn->prepare($sqlCheckEmail);
         $stmtCheckEmail->bindParam(":em", $email);
@@ -86,8 +84,11 @@ class User
 
         $passwordUpdate = "";
         if ($currentPassword && $newPassword) {
-            $currentUser = $this->fetchUserById($userId);
-            $hashedPasswordFromDb = $currentUser['password'];
+            $sqlPassword = "SELECT password FROM users WHERE id = :ui";
+            $stmtPassword = $this->conn->prepare($sqlPassword);
+            $stmtPassword->bindParam(":ui", $userId);
+            $stmtPassword->execute();
+            $hashedPasswordFromDb = $stmtPassword->fetchColumn();
 
             if (!password_verify($currentPassword, $hashedPasswordFromDb)) {
                 throw new Exception("Incorrect current password.");

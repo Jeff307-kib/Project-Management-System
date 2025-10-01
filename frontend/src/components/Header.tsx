@@ -1,13 +1,19 @@
 import ProfileButton from "@/features/utils/ProfileButton";
+import Notifications from "@/features/utils/Notifications";
 import { Bell } from "lucide-react";
 import { useEffect } from "react";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/app/store";
-
+import { Popover, PopoverTrigger } from "@radix-ui/react-popover";
+import { useMarkNotificationReadMutation } from "@/api/apiSlice";
+import { useGetNotificationsQuery } from "@/api/apiSlice";
+import { Link } from "react-router-dom";
 
 const Header = () => {
   const user = useSelector((state: RootState) => state.auth.user);
   const login = useSelector((state: RootState) => state.auth.isLoggedIn);
+  const userId = user?.id ?? "0";
+  console.log("user id noti", userId)
   useEffect(() => {
     if (user) {
       console.log("Logged in user state:", user);
@@ -16,11 +22,28 @@ const Header = () => {
       console.log("No user is currently logged in.");
     }
   }, [user, login]);
+
+  //handle notification read
+  const [markNotificationRead] = useMarkNotificationReadMutation();
+  const handleRead = async () => {
+    try {
+      const res = await markNotificationRead(userId).unwrap();
+      console.log("message read", res);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const { data: notifications } = useGetNotificationsQuery(userId);
+  let isNewNoti = false;
+  if (notifications?.notifications) {
+    isNewNoti = notifications.notifications.some((noti) => !noti.is_read);
+  }
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4">
       <div className="container flex h-14 max-w-screen-2xl items-center">
         <div className="mr-4 hidden md:flex">
-          <a className="mr-6 flex items-center space-x-2" href="/">
+          <Link className="mr-6 flex items-center space-x-2" to="/">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -36,16 +59,25 @@ const Header = () => {
             <span className="hidden font-bold sm:inline-block">
               ProjectFlow
             </span>
-          </a>
+          </Link>
         </div>
 
         <div className="flex flex-1 items-center justify-end space-x-4">
           <div className="relative">
-            <Bell className="h-5 w-5 text-muted-foreground transition-colors hover:text-foreground cursor-pointer" />
-            <span className="absolute -top-1 -right-1 flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-destructive"></span>
-            </span>
+            <Popover>
+              <PopoverTrigger asChild onClick={handleRead}>
+                <Bell
+                  className="h-5 w-5 text-muted-foreground transition-colors hover:text-foreground cursor-pointer"
+                />
+              </PopoverTrigger>
+              <Notifications />
+            </Popover>
+            {isNewNoti && (
+              <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-destructive"></span>
+              </span>
+            )}
           </div>
           <ProfileButton />
         </div>

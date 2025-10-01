@@ -8,7 +8,7 @@ include_once '../phpmailer/Exception.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
-use PHPMailer\PHPMailer\Exception;
+use PHPMailer\PHPMailer\Exception as PHPMailerException;
 
 class UserController
 {
@@ -35,7 +35,7 @@ class UserController
             $profileImage = null;
 
             if (isset($_FILES['profileImage']) && $_FILES['profileImage']['error'] === 0) {
-                $uploadDir = __DIR__ . '/../public/uploads/profiles/'; // Correct absolute path
+                $uploadDir = __DIR__ . '/../public/uploads/profiles/';
                 $fileName = basename($_FILES['profileImage']['name']);
                 $fileTmpName = $_FILES['profileImage']['tmp_name'];
                 $fileSize = $_FILES['profileImage']['size'];
@@ -85,7 +85,7 @@ class UserController
             ]);
         } catch (Exception $e) {
             if ($e->getMessage() === "This email is already in use. Please try Logging In!") {
-                http_response_code(409); // 409 Conflict is the correct status for duplicate resources
+                http_response_code(409); 
                 echo json_encode(['error' => $e->getMessage()]);
             } else {
                 http_response_code(400); // Bad Request for other errors
@@ -99,7 +99,7 @@ class UserController
         try {
             $data = json_decode(file_get_contents("php://input"), true);
 
-            if (empty($data['credential'] || empty($data['password']))) {
+            if (empty($data['credential']) || empty($data['password'])) {
                 http_response_code(400);
                 echo json_encode(['error' => 'Please enter all fields!']);
                 return;
@@ -122,11 +122,11 @@ class UserController
                 'user' => $user,
             ]);
         } catch (Exception $e) {
-            if ($e->getMessage() === "Incorrect email, username or password.") {
+            if ($e->getMessage() === "Incorrect email or password.") {
                 http_response_code(409);
-                echo json_encode(['error' => $e->getMessage()]);
+                echo json_encode(['error' => 'Incorrect email or password.']);
             } else {
-                http_response_code(500); // Database query failed 
+                http_response_code(500);
                 echo json_encode(['error' => "An unexpected error occured!"]);
             }
         }
@@ -134,11 +134,26 @@ class UserController
 
     function logoutUser()
     {
-        session_unset();
+        $_SESSION = array();
+
+        if (ini_get("session.use_cookies")) {
+            $params = session_get_cookie_params();
+            setcookie(
+                session_name(),
+                '',
+                time() - 42000,
+                $params["path"],
+                $params["domain"],
+                $params["secure"],
+                $params["httponly"]
+            );
+        }
+
         session_destroy();
 
-        echo json_encode(['success' => true, 'message' => 'Logged out successfully!']);
+        echo json_encode(['isSuccess' => true, 'message' => 'Logged out successfully!']);
     }
+
 
     function checkSession()
     {
@@ -306,12 +321,12 @@ class UserController
                         $mail->AltBody = "Password reset link: $resetLink (valid for 1 hour)";
 
                         $mail->send();
-                    } catch (Exception $e) {
+                    } catch (PHPMailerException $e) {
                         http_response_code(500);
                         $response = [
                             'status' => 'error',
                             'message' => 'Mailer failed to send email.',
-                            'details' => $mail->ErrorInfo // safe because json_encode will escape it
+                            'details' => $mail->ErrorInfo 
                         ];
                         echo json_encode($response);
                         exit;

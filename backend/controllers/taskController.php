@@ -1,0 +1,447 @@
+<?php
+require_once '../config/authCheck.php';
+include_once '../models/Task.php';
+include_once '../models/Workspace.php';
+include_once '../models/User.php';
+include_once '../models/Notification.php';
+
+class taskController
+{
+    private $task;
+    private $workspace;
+    private $user;
+    private $noti;
+
+    public function __construct()
+    {
+        $this->task = new Task();
+        $this->workspace = new Workspace();
+        $this->user = new User();
+        $this->noti = new Notification();
+    }
+
+    function getTasks()
+    {
+        try {
+            if (empty($_GET['workspaceId'])) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Missing Workspace Id']);
+                return;
+            }
+            $workspaceId = $_GET['workspaceId'];
+
+            $tasks = $this->task->fetchTasks($workspaceId);
+
+            if (!empty($tasks)) {
+                foreach ($tasks as $key => $task) {
+                    $taskId = $task['id'];
+                    $memberDetails = [];
+                    $memberDetails = $this->getTaskAssigneesDetails($taskId);
+
+                    $tasks[$key]['members'] = $memberDetails;
+                }
+            }
+
+            if (empty($tasks)) {
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Tasks fetched succesfully!',
+                    'data' => [],
+                ]);
+            } else {
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Tasks fetched succesfully!',
+                    'data' => $tasks,
+                ]);
+            }
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => "Unexpected error occured: " . $e->getMessage()]);
+        }
+    }
+
+    function addTask()
+    {
+        $data = json_decode(file_get_contents("php://input"), true);
+
+        try {
+            if (empty($data['title']) || empty($data['dueDate']) || empty($data['priorityLevel'])) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Please enter all required fields.']);
+                return;
+            }
+
+            if (empty($data['workspaceId']) || empty($data['userId'])) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Workspace Id or User Id missing!']);
+                return;
+            }
+
+            $creatorId = $data['userId'];
+            $workspaceId = $data['workspaceId'];
+            $title = $data['title'];
+            $description = $data['description'];
+            $status = "To Do";
+            $dueDate = $data['dueDate'];
+            $priorityLevel = $data['priorityLevel'];
+
+            $workspaceDetail = $this->workspace->fetchWorkspaceById($workspaceId, $creatorId);
+
+            if ($this->task->checkDuplicate($title, $workspaceId)) {
+                http_response_code(409);
+                echo json_encode(['error' => "A Task with this name is already exists!"]);
+                return;
+            }
+
+            $taskId = $this->task->insertTask($title, $description, $status, $dueDate, $priorityLevel, $creatorId, $workspaceId);
+
+            if (isset($data['members'])) {
+                foreach ($data['members'] as $memberId) {
+                    $this->task->insertTaskAssignees($taskId, $memberId);
+                    $this->noti->createNotification([
+                        'recipient_id' => $memberId,
+                        'sender_id' => 17,
+                        'type' => 'Task Assign',
+                        'related_id' => $workspaceId,
+                        'invitation_status' => null,
+                        'message' => 'Admin assigned you a new task in ' . $workspaceDetail['name'] . ' : ' . $title,
+                    ]);
+                }
+            }
+
+            echo json_encode([
+                'success' => true,
+                'message' => "Task Added Successfully!",
+            ]);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Unexpected error occured: ' . $e->getMessage()]);
+        }
+    }
+
+    function getTaskAssigneesDetails($taskId)
+    {
+        $membersDetails = array();
+        $members = $this->task->fetchTaskAssignees($taskId);
+        foreach ($members as $member) {
+            $singleMemberDetail = $this->user->fetchUserById($member['user_id']);
+            array_push($membersDetails, $singleMemberDetail);
+        }
+        return $membersDetails;
+    }
+
+    function getTaskById()
+    {
+        $taskId = $_GET['taskId'];
+
+        if (empty($taskId)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Missing Task Id!']);
+            return;
+        }
+
+        try {
+            $task = $this->task->fetchTaskById($taskId);
+
+            $taskAssignees = $this->getTaskAssigneesDetails($taskId);
+            $task['members'] = $taskAssignees;
+
+            $attachments = $this->task->fetchAttachment($taskId);
+            $task['attachments'] = $attachments;
+
+            $comments = $this->getCommentDetail($taskId);
+            $task['comments'] = $comments;
+
+            if ($task) {
+                echo json_encode([
+                    'success' => true,
+                    'message' => "Task fetched successfully!",
+                    'data' => $task,
+                ]);
+            }
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Unexpected Error occured: ' . $e->getMessage()]);
+        }
+    }
+
+    function editTask()
+    {
+        $data = json_decode(file_get_contents("php://input"), true);
+
+        if (empty($data['taskId']) || empty($data['title']) || empty($data['priorityLevel']) || empty($data['dueDate'])) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Missing required fields or missing task id.']);
+            return;
+        }
+
+        $taskId = $data['taskId'];
+        $title = trim($data['title']);
+        $description = isset($data['description']) ? trim($data['description']) : null;
+        $priorityLevel = $data['priorityLevel'];
+        $dueDate = $data['dueDate'];
+        $members = isset($data['members']) ? $data['members'] : [];
+
+        try {
+            $this->task->updateTask($title, $description, $dueDate, $priorityLevel, $taskId);
+
+            if (count($members) > 0) {
+                foreach ($members as $member) {
+                    $this->task->insertTaskAssignees($taskId, $member);
+                }
+            }
+            echo json_encode([
+                'success' => true,
+                'message' => 'Task Updated Successfully',
+            ]);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => "Unexpected error occured! " . $e->getMessage()]);
+        }
+    }
+
+    function deleteTask()
+    {
+        $data = json_decode(file_get_contents("php://input"), true);
+
+        if (empty($data['taskId'])) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Missin task Id!']);
+            return;
+        }
+
+        try {
+            $taskId = $data['taskId'];
+
+            $attachments = $this->task->fetchAttachment($taskId);
+
+            foreach ($attachments as $attachment) {
+                $file = __DIR__ . '/../public/' . $attachment['file_path'];
+                if (file_exists($file)) {
+                    unlink($file);
+                }
+            }
+
+            $this->task->dropTask($taskId);
+
+            echo json_encode([
+                'success' => true,
+                'message' => 'Task Deleted Successfully!',
+            ]);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Unexpected error occured! ' . $e->getMessage()]);
+        }
+    }
+
+    function updateStatus()
+    {
+        $data = json_decode(file_get_contents("php://input"), true);
+
+        if (empty($data['taskId']) || empty($data['workspaceId'])) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Missing Task Id or Workspace Id.']);
+            return;
+        }
+
+        if (empty($data['status'])) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Missing Status']);
+            return;
+        }
+
+        $taskId = $data['taskId'];
+        $status = $data['status'];
+        $workspaceId = $data['workspaceId'];
+        $userId = $_SESSION['userId'];
+
+        $rejectionReason = $data['rejectionReason'] ?? null;
+        try {
+            if (!empty($rejectionReason)) {
+                $this->task->updateStatus($taskId, $status, $rejectionReason);
+            } else {
+                $this->task->updateStatus($taskId, $status);
+            }
+
+            $taskDetail = $this->task->fetchTaskById($taskId);
+            $workspaceDetail = $this->workspace->fetchWorkspaceById($workspaceId, $userId);
+            $message = "The status of your Task '" . $taskDetail['title'] . "' from Workspace: '" . $workspaceDetail['name'] . "' has been updated to " . $status;
+
+            $this->sendNotificationToTaskAssignees($taskId, $userId, $workspaceId, $message);
+
+            echo json_encode([
+                'success' => true,
+                'message' => 'Task Status Updated Successfully!',
+            ]);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Unexpected error occured. ' . $e->getMessage()]);
+        }
+    }
+
+    function addAttachment()
+    {
+        try {
+            if (empty($_POST['taskId']) || empty($_POST['userId']) || empty($_POST['workspaceId'])) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Task Id or User Id or Workspace Id Missing!']);
+                return;
+            }
+
+            $taskId = $_POST['taskId'];
+            $userId = $_POST['userId'];
+            $workspaceId = $_POST['workspaceId'];
+
+            if (isset($_FILES['fileAttachment']) && $_FILES['fileAttachment']['error'] === 0) {
+                $uploadDir = __DIR__ . '/../public/uploads/attachments/';
+                $fileName = basename($_FILES['fileAttachment']['name']);
+                $fileTmpName = $_FILES['fileAttachment']['tmp_name'];
+                $fileSize = $_FILES['fileAttachment']['size'];
+
+                $fileSizeInMB = number_format($fileSize / (1024 * 1024), 2);
+                // $maxFileSize = 15 * 1024 * 1024;
+
+                if ($fileSizeInMB > 15) {
+                    http_response_code(413);
+                    echo json_encode(['error' => "File is too large. Maximum size is 15MB."]);
+                    return;
+                }
+
+                $fileExt = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+                $allowed = array('pdf', 'docx', 'xlsx', 'pptx', 'txt', 'jpg', 'jpeg', 'png', 'gif', 'svg', 'webp');
+
+                if (!in_array($fileExt, $allowed)) {
+                    http_response_code(400);
+                    echo json_encode(['error' => "Only 'pdf', 'docx', 'xlsx', 'pptx', 'txt', 'jpg', 'jpeg', 'png', 'gif', 'svg' and 'webp' files are allowed!"]);
+                    return;
+                }
+
+                $newFileName = uniqid("", true) . '.' . $fileExt;
+                $uploadFileDestination = $uploadDir . $newFileName;
+
+                if (!move_uploaded_file($fileTmpName, $uploadFileDestination)) {
+                    http_response_code(500);
+                    echo json_encode(['error' => "Error moving the file!"]);
+                    return;
+                }
+
+                $filePath = 'uploads/attachments/' . $newFileName;
+
+                $this->task->insertAttachment($taskId, $userId, $fileName, $fileExt, $fileSizeInMB, $filePath);
+
+                $taskDetail = $this->task->fetchTaskById($taskId);
+                $workspaceDetail = $this->workspace->fetchWorkspaceById($workspaceId, $userId);
+                $message = "A new attachment was added to the task '" . $taskDetail['title'] . "' from " . $workspaceDetail['name'] . ".";
+
+                $this->sendNotificationToTaskAssignees($taskId, $userId, $workspaceId, $message);
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Attachment Added Successfully',
+                ]);
+            }
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Unexpected error occured.' . $e->getMessage()]);
+        }
+    }
+
+    function addComment()
+    {
+        $data = json_decode(file_get_contents("php://input"), true);
+
+        if (empty($data['userId']) || empty($data['workspaceId']) || empty($data['taskId'])) {
+            http_response_code(400);
+            echo json_encode(['error' => 'User Id or Workspace Id or Task Id Missing!']);
+            return;
+        }
+
+        if (empty($data['commentText'])) {
+            http_response_code(400);
+            echo json_encode(['error' => 'No comment text found.']);
+            return;
+        }
+
+        try {
+            $commentText = trim($data['commentText']);
+            $taskId = $data['taskId'];
+            $userId = $data['userId'];
+            $workspaceId = $data['workspaceId'];
+
+            $taskDetail = $this->task->fetchTaskById($taskId);
+            $workspaceDetail = $this->workspace->fetchWorkspaceById($workspaceId, $userId);
+            $message = "A new comment was posted in the task '" . $taskDetail['title'] . "' from " . $workspaceDetail['name'] . ".";
+
+            $this->task->insertComment($taskId, $userId, $commentText);
+
+            $this->sendNotificationToTaskAssignees($taskId, $userId, $workspaceId, $message);
+            echo json_encode([
+                'success' => true,
+                'message' => 'Comment Added Successfully!',
+            ]);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Unexpected error occured.', $e->getMessage()]);
+        }
+    }
+
+    function getCommentDetail($taskId)
+    {
+        $comments = $this->task->fetchComments($taskId);
+        foreach ($comments as $key => $comment) {
+            $user = $this->user->fetchUserById($comment['created_by']);
+
+            $comments[$key]['user'] = $user;
+
+            unset($comments[$key]['created_by']);
+        }
+
+        return $comments;
+    }
+
+    function sendNotificationToTaskAssignees($taskId, $userId, $workspaceId, $message)
+    {
+        $taskAssignees = $this->task->fetchTaskAssignees($taskId);
+
+        foreach ($taskAssignees as $taskAssignee) {
+            $this->noti->createNotification([
+                'recipient_id' => $taskAssignee['user_id'],
+                'sender_id' => $userId,
+                'type' => 'Task Update',
+                'related_id' => $workspaceId,
+                'invitation_status' => null,
+                'message' => $message,
+            ]);
+        }
+
+        return true;
+    }
+
+    function getUserTasks() {
+        if (empty($_GET['userId'])) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Missing User Id!']);
+            return;
+        }
+
+        try {
+            $userId = $_GET['userId'];
+
+            $tasks = $this->task->fetchUserTasks($userId);
+            
+            foreach($tasks as $key => $task) {
+                $workspace = $this->workspace->fetchWorkspaceById($task['workspace_id'], $userId);
+                $tasks[$key]['workspace_name'] = $workspace['name'];
+            }
+
+            echo json_encode([
+                'success' => true,
+                'message' => 'Tasks Fetched Successfully!',
+                'data' => $tasks,
+            ]);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => "Unexpected Error Occured: " . $e->getMessage()]);
+        }
+    }
+}

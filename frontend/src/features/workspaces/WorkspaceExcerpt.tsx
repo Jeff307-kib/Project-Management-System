@@ -5,7 +5,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Progress } from "@/components/ui/progress";
-import { GripVertical } from "lucide-react";
 
 import type { Workspace } from "@/types/workspace.d";
 import { format } from "date-fns";
@@ -17,8 +16,8 @@ interface Props {
 
 const WorkspaceExcerpt = ({ workspace }: Props) => {
   const navigate = useNavigate();
-  const completedTasks = 2;
-  const totalTasks = 8;
+  const completedTasks = workspace.completedTasks;
+  const totalTasks = workspace.taskCount;
   const progressPercentage = (completedTasks / totalTasks) * 100;
 
   const formattedDate = format(new Date(workspace.created_at), "MMM d yyyy");
@@ -38,8 +37,14 @@ const WorkspaceExcerpt = ({ workspace }: Props) => {
   }
   const workspaceId = workspace.id;
   const clickWorkspace = () => {
-    navigate(`${workspaceId}`);
+    navigate(`${workspaceId}/tasks`);
   };
+
+  //hanlde member icon
+  const backendURL = "http://localhost/projectManagementSystem/backend/public/";
+  const visibleMembers = workspace.members.slice(0, 3);
+  const extraCount = workspace.members.length - 3;
+  
 
   return (
     <div
@@ -60,9 +65,9 @@ const WorkspaceExcerpt = ({ workspace }: Props) => {
           </Tooltip>
           <p className="text-sm text-muted-foreground">{description}</p>
         </div>
-        <button className="text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100">
-          <GripVertical className="h-5 w-5" />
-        </button>
+        {/* <button className="text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100 cursor-pointer">
+          <Pin className="h-5 w-5" />
+        </button> */}
       </div>
 
       <div className="flex flex-col gap-4 p-4 pt-0">
@@ -82,25 +87,26 @@ const WorkspaceExcerpt = ({ workspace }: Props) => {
           <p className="text-xs text-muted-foreground font-medium">
             {formattedDate}
           </p>
-          <div className="flex -space-x-2 ">
-            <Avatar className="h-8 w-8 border-2 border-card">
-              <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-              <AvatarFallback>CN</AvatarFallback>
-            </Avatar>
-            <Avatar className="h-8 w-8 border-2 border-card">
-              <AvatarImage
-                src="https://github.com/lead-dev.png"
-                alt="Lead Dev"
-              />
-              <AvatarFallback>LD</AvatarFallback>
-            </Avatar>
-            <Avatar className="h-8 w-8 border-2 border-card">
-              <AvatarImage
-                src="https://github.com/designer.png"
-                alt="Designer"
-              />
-              <AvatarFallback>DS</AvatarFallback>
-            </Avatar>
+          <div className="flex items-center">
+            {visibleMembers.map((member, idx) => (
+              <Avatar
+                key={member.id}
+                className={`h-8 w-8 border-2 border-card ${
+                  idx !== 0 ? "-ml-2" : ""
+                }`}
+              >
+                <AvatarImage src={backendURL + member.profile_url} alt={member.username} />
+                <AvatarFallback>
+                  {member.username.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            ))}
+
+            {extraCount > 0 && (
+              <div className="flex items-center justify-center h-8 w-8 border-2 border-card rounded-full bg-gray-200 text-xs font-medium text-gray-700 -ml-2">
+                +{extraCount}
+              </div>
+            )}
           </div>
         </div>
       </div>

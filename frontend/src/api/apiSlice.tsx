@@ -6,6 +6,10 @@ import type {
   NewWorkspace,
   EditWorkspace,
   GetWorkspaceByIdResponse,
+  Invitation,
+  getNotificationResponse,
+  GetMembersResponse,
+  GetMemberPerformanceResponse,
 } from "@/types/workspace.d";
 
 import type {
@@ -15,7 +19,19 @@ import type {
   Loginuser,
   ForgotPasswordResponse,
   ResetPassword,
+  ChangeRole,
 } from "@/types/users.d";
+
+import type {
+  GetTasksResponse,
+  TaskMutationResponse,
+  AddTask,
+  getTaskByIdResponse,
+  EditTask,
+  AddComment,
+  UpdateStatus,
+  GetUserTasksResponse,
+  } from "@/types/tasks.d";
 
 
 export const apiSlice = createApi({
@@ -24,7 +40,7 @@ export const apiSlice = createApi({
     baseUrl: "http://localhost/projectManagementSystem/backend/public/",
     credentials: "include",
   }),
-  tagTypes: ["Workspace", "User"],
+  tagTypes: ["Workspace", "User", "Notification", "Task", "Member"],
 
   endpoints: (builder) => ({
     getWorkspaces: builder.query<GetWorkspacesResponse, void>({
@@ -32,7 +48,7 @@ export const apiSlice = createApi({
         url: "getWorkspaces.php",
         method: "GET",
       }),
-      providesTags: ["Workspace"],
+      providesTags: ["Workspace", "User"],
     }),
     addWorkspace: builder.mutation<WorkspaceMutationResponse, NewWorkspace>({
       query: (workspace) => ({
@@ -64,13 +80,6 @@ export const apiSlice = createApi({
         body: { workspaceId },
       }),
       invalidatesTags: ["Workspace"],
-    }),
-    deleteTask: builder.mutation<WorkspaceMutationResponse, number>({
-      query: (workspaceId) => ({
-        url: `deleteWorkspace.php?workspaceId=${workspaceId}`,
-        method: "DELETE",
-        body: { workspaceId },
-      }),
     }),
     registerUser: builder.mutation<RegistrationResponse, RegisterUser>({
       query: (user) => {
@@ -115,23 +124,164 @@ export const apiSlice = createApi({
       query: (formData) => ({
         url: "editProfile.php",
         method: "POST",
-        body: formData
+        body: formData,
       }),
     }),
     forgotPassword: builder.mutation<ForgotPasswordResponse, string>({
       query: (email) => ({
-        url: 'forgotPassword.php',
+        url: "forgotPassword.php",
         method: "POST",
-        body: {email},
-      })
+        body: { email },
+      }),
     }),
     resetPassword: builder.mutation<ForgotPasswordResponse, ResetPassword>({
       query: (credentials) => ({
-        url: 'resetPassword.php',
-        method: 'POST',
+        url: "resetPassword.php",
+        method: "POST",
         body: credentials,
-      })
-    })
+      }),
+    }),
+    sendInvitation: builder.mutation<WorkspaceMutationResponse, Invitation>({
+      query: (invitation) => ({
+        url: "sendInvitation.php",
+        method: "POST",
+        body: invitation,
+      }),
+      invalidatesTags: ["Notification"],
+    }),
+    getNotifications: builder.query<getNotificationResponse, string>({
+      query: (userId) => ({
+        url: `getNotifications.php?userId=${userId}`,
+        method: "GET",
+      }),
+      providesTags: ["Notification"],
+    }),
+    acceptInviation: builder.mutation<WorkspaceMutationResponse, string>({
+      query: (notificationId) => ({
+        url: "acceptInvitation.php",
+        method: "POST",
+        body: { notificationId },
+      }),
+      invalidatesTags: ["Workspace", "Notification"],
+    }),
+    declineInvitation: builder.mutation<WorkspaceMutationResponse, string>({
+      query: (notificationId) => ({
+        url: "declineInvitation.php",
+        method: "POST",
+        body: { notificationId },
+      }),
+      invalidatesTags: ["Workspace", "Notification"],
+    }),
+    markNotificationRead: builder.mutation<WorkspaceMutationResponse, string>({
+      query: (userId) => ({
+        url: 'markNotificationRead.php',
+        method: 'POST',
+        body: { userId },
+      }),
+      invalidatesTags: ['Notification'],
+    }),
+    deleteNotification: builder.mutation<WorkspaceMutationResponse, string>({
+      query: (notificationId) => ({
+        url: "deleteNotification.php",
+        method: "POST",
+        body: { notificationId },
+      }),
+      invalidatesTags: ["Notification"],
+    }),
+    getMembers: builder.query<GetMembersResponse, string>({
+      query: (workspaceId) => ({
+        url: `getMembers.php?workspaceId=${workspaceId}`,
+        method: "GET",
+      }),
+      providesTags: ['Member'],
+    }),
+    getTasks: builder.query<GetTasksResponse, string>({
+      query: (workspaceId) => ({
+        url: `getTasks.php?workspaceId=${workspaceId}`,
+        method: "GET",
+      }),
+      providesTags: ["Task"],
+    }),
+    getUserTasks: builder.query<GetUserTasksResponse, string>({
+      query: (userId) => `getUserTasks.php?userId=${userId}`,
+      providesTags: ["Task"],
+    }),
+    addTask: builder.mutation<TaskMutationResponse, AddTask>({
+      query: (task) => ({
+        url: "addTask.php",
+        method: "POST",
+        body: task,
+      }),
+      invalidatesTags: ["Task", "Notification"],
+    }),
+    getTaskById: builder.query<getTaskByIdResponse, string>({
+      query: (taskId) => ({
+        url: `getTaskById.php?taskId=${taskId}`,
+        method: "GET",
+      }),
+      providesTags: ["Task"],
+    }),
+    editTask: builder.mutation<TaskMutationResponse, EditTask>({
+      query: (task) => ({
+        url: "editTask.php",
+        method: "POST",
+        body: task,
+      }),
+      invalidatesTags: ["Task"],
+    }),
+    deleteTask: builder.mutation<TaskMutationResponse, string>({
+      query:(taskId) => ({
+        url: 'deleteTask.php',
+        method: 'DELETE',
+        body: { taskId }
+      }),
+      invalidatesTags: ["Task"],
+    }),
+    updateTaskStatus: builder.mutation<TaskMutationResponse, UpdateStatus>({
+      query: (task) => ({
+        url: 'updateTaskStatus.php',
+        method: 'POST',
+        body: task,
+      }),
+      invalidatesTags: ["Task", "Notification"],
+    }),
+    addAttachment: builder.mutation<TaskMutationResponse, FormData>({
+      query: (formData) => ({
+        url: 'addAttachment.php',
+        method: 'POST',
+        body: formData,
+      }),
+      invalidatesTags: ["Task", "Notification"],
+    }),
+    addComment: builder.mutation<TaskMutationResponse, AddComment>({
+      query: (comment) => ({
+        url: 'addComment.php',
+        method: 'POST',
+        body: comment,
+      }),
+      invalidatesTags: ['Task', "Notification"]
+    }),
+    changeMemberRole: builder.mutation<TaskMutationResponse, ChangeRole>({
+      query: (changeRole) => ({
+        url: 'changeMemberRole.php',
+        method: 'POST',
+        body: changeRole,
+      }),
+      invalidatesTags: ['Member'],
+    }),
+    removeMember: builder.mutation<TaskMutationResponse, ChangeRole>({
+      query: (changeRole) => ({
+        url: 'removeMember.php',
+        method: 'POST',
+        body: changeRole,
+      }),
+      invalidatesTags: ['Member'],
+    }),
+    getmemberPeformance: builder.query<GetMemberPerformanceResponse, string>({
+      query: (workspaceId) => `getMemberPerformance.php?workspaceId=${workspaceId}`,
+      providesTags: ['Member'],
+    }),
+
   }),
 });
 
@@ -141,7 +291,6 @@ export const {
   useAddWorkspaceMutation,
   useEditWorkspaceMutation,
   useDeleteWorkspaceMutation,
-  useDeleteTaskMutation,
   useRegisterUserMutation,
   useLoginUserMutation,
   useCheckSessionQuery,
@@ -149,4 +298,23 @@ export const {
   useUpdateProfileMutation,
   useForgotPasswordMutation,
   useResetPasswordMutation,
+  useSendInvitationMutation,
+  useGetNotificationsQuery,
+  useAcceptInviationMutation,
+  useDeclineInvitationMutation,
+  useMarkNotificationReadMutation,
+  useDeleteNotificationMutation,
+  useGetMembersQuery,
+  useGetTasksQuery,
+  useGetUserTasksQuery,
+  useAddTaskMutation,
+  useGetTaskByIdQuery,
+  useEditTaskMutation,
+  useDeleteTaskMutation,
+  useUpdateTaskStatusMutation,
+  useAddAttachmentMutation,
+  useAddCommentMutation,
+  useChangeMemberRoleMutation,
+  useRemoveMemberMutation,
+  useGetmemberPeformanceQuery,
 } = apiSlice;
