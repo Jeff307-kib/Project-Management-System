@@ -178,4 +178,26 @@ class notificationController
             echo json_encode(['error' => 'Unexpected Error Occured: ' . $e->getMessage()]);
         }
     }
+
+    function clearAllNotifications() {
+        $data = json_decode(file_get_contents("php://input"), true);
+        if (empty($data['userId'])) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Missing User Id!']);
+            return;
+        }
+
+        try {
+            $userId = $data['userId'];
+
+            $this->noti->clearAllNotification($userId);
+            echo json_encode([
+                'success' => true,
+                'message' => "Messages cleared!",
+            ]);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Unexpected Error Occured: ' . $e->getMessage()]);
+        }
+    }
 }
