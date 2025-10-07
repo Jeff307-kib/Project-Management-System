@@ -2,7 +2,7 @@
 include_once '../config/headers.php';
 include_once '../controllers/notificationController.php';
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+if ($_SERVER['REQUEST_METHOD'] == 'DELETE') {
     $workspace = new notificationController();
     $workspace->deleteNotification();
 } else {

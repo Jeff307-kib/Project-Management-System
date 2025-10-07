@@ -132,7 +132,7 @@ const WorkspaceDashboard = () => {
                   <p>{data?.data.name}</p>
                 </TooltipContent>
               </Tooltip>
-              
+
               <WorkspaceModal
                 isOpen={isOpen}
                 setOpen={setOpen}
@@ -145,14 +145,19 @@ const WorkspaceDashboard = () => {
                 setTaskOpen={setTaskOpen}
               />
               <div className="flex-1 flex justify-center items-center space-x-2">
-                <Tooltip>
-                  <TooltipTrigger>
-                    <Plus className="w-9 h-9 rounded-md p-2 border-2 hover:bg-gray-200 cursor-pointer" onClick={handleAddTask}/>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Add Task</p>
-                  </TooltipContent>
-                </Tooltip>
+                {role === "admin" && (
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Plus
+                        className="w-9 h-9 rounded-md p-2 border-2 hover:bg-gray-200 cursor-pointer"
+                        onClick={handleAddTask}
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Add Task</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
                 <div className="relative w-full max-w-md">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
