@@ -255,6 +255,6 @@
                 return $row;
             }
 
-            return[];
+            return [];
         }
     }
