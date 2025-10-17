@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+/* @import url(https://fonts.googleapis.com/css?family=Open+Sans:300); */
 
 @custom-variant dark (&:is(.dark *));
 
@@ -431,4 +432,3 @@
   }
 }
 
-@import url(https://fonts.googleapis.com/css?family=Open+Sans:300);

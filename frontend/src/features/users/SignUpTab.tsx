@@ -3,7 +3,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -160,9 +159,6 @@ const SignUpTab = () => {
               Sign Up
             </Button>
           </CardContent>
-          <CardFooter className="flext justify-center mt-6">
-            <p className="text-center">Log In with Google</p>
-          </CardFooter>
         </form>
       </Card>
     </TabsContent>

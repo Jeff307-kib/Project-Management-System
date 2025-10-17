@@ -70,8 +70,34 @@ const UserProfile = () => {
 
   const handleUpdateProfile = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     if (!user) {
       setProfileFormError("No user logged in.");
+      return;
+    }
+
+    const nameRegex = /^[A-Za-z\s]{2,50}$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!name.trim()) {
+      setProfileFormError("Name cannot be empty.");
+      return;
+    }
+
+    if (!nameRegex.test(name)) {
+      setProfileFormError(
+        "Please enter a valid name (letters and spaces only) and more than 2 characters."
+      );
+      return;
+    }
+
+    if (!email.trim()) {
+      setProfileFormError("Email cannot be empty.");
+      return;
+    }
+
+    if (!emailRegex.test(email)) {
+      setProfileFormError("Please enter a valid email address.");
       return;
     }
 
@@ -100,18 +126,87 @@ const UserProfile = () => {
     }
   };
 
+  // const handleUpdatePassword = async (e: React.FormEvent<HTMLFormElement>) => {
+  //   e.preventDefault();
+  //   if (!user) {
+  //     setPasswordFormError("No user logged in.");
+  //     return;
+  //   }
+
+  //   if (newPassword !== confirmNewPassword) {
+  //     setPasswordFormError("New password and confirm password do not match!");
+  //     return;
+  //   }
+
+  //   const formData = new FormData();
+  //   formData.append("userId", userId.toString());
+  //   formData.append("currentPassword", currentPassword);
+  //   formData.append("newPassword", newPassword);
+
+  //   try {
+  //     const updatedUser = await updateUser(formData).unwrap();
+  //     dispatch(setCredentials(updatedUser.user));
+  //     setPasswordFormError("");
+  //     SuccessToast(
+  //       "Password Updated!",
+  //       "Your password has been changed successfully!"
+  //     );
+
+  //     setCurrentPassword("");
+  //     setNewPassword("");
+  //     setConfirmNewPassword("");
+  //   } catch (err) {
+  //     console.error("Password update failed:", err);
+  //     if (err && typeof err === "object" && "data" in err) {
+  //       const typedErr = err as { data?: { error?: string } };
+  //       setPasswordFormError(typedErr.data?.error || "Something went wrong!");
+  //     } else {
+  //       setPasswordFormError("Something went wrong!");
+  //     }
+  //   }
+  // };
   const handleUpdatePassword = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     if (!user) {
       setPasswordFormError("No user logged in.");
       return;
     }
 
+    // --- Empty Field Checks ---
+    if (!currentPassword.trim()) {
+      setPasswordFormError("Current password cannot be empty.");
+      return;
+    }
+
+    if (!newPassword.trim()) {
+      setPasswordFormError("New password cannot be empty.");
+      return;
+    }
+
+    if (!confirmNewPassword.trim()) {
+      setPasswordFormError("Please confirm your new password.");
+      return;
+    }
+
+    // --- Password Strength Validation ---
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+    if (!passwordRegex.test(newPassword)) {
+      setPasswordFormError(
+        "Password must be at least 8 characters long and include uppercase, lowercase, a number, and a special character!"
+      );
+      return;
+    }
+
+    // --- Match Validation ---
     if (newPassword !== confirmNewPassword) {
       setPasswordFormError("New password and confirm password do not match!");
       return;
     }
 
+    // --- Proceed with API Call ---
     const formData = new FormData();
     formData.append("userId", userId.toString());
     formData.append("currentPassword", currentPassword);
@@ -148,8 +243,10 @@ const UserProfile = () => {
     );
   }
 
-  const backendURL = "http://localhost/projectManagementSystem/backend/public"
-  const profileURL = user?.profileImage ? `${backendURL}/${user?.profileImage}` : ''
+  const backendURL = "http://localhost/projectManagementSystem/backend/public";
+  const profileURL = user?.profileImage
+    ? `${backendURL}/${user?.profileImage}`
+    : "";
 
   const getProfileImageSrc = () => {
     if (profileImage instanceof File) {
@@ -165,7 +262,7 @@ const UserProfile = () => {
         <Button
           type="button"
           variant="ghost"
-          onClick={() => (navigate(-1))}
+          onClick={() => navigate(-1)}
           className="flex items-center space-x-2 text-sm text-gray-500 transition-colors cursor-pointer"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -182,7 +279,7 @@ const UserProfile = () => {
               )}
               <AvatarFallback>{name?.slice(0, 2).toUpperCase()}</AvatarFallback>
             </Avatar>
-            
+
             <CardTitle className="text-2xl">{user.name}</CardTitle>
             <CardDescription>{user.email}</CardDescription>
           </CardHeader>

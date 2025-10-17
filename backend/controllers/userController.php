@@ -282,10 +282,11 @@ class UserController
 
         try {
             $user = $this->user->fetchUserByEmail($email);
-            $userId = $user['id'];
+            
 
-            if ($user) {
-                $token = bin2hex(random_bytes(32)); // Creates a 64-character hex string
+            if ($user && is_array($user)) {
+                $userId = $user['id'];
+                $token = bin2hex(random_bytes(32));
                 $expires = date('Y-m-d H:i:s', strtotime('+1 hour')); // Token expires in 1 hour
 
                 if ($this->user->saveResetToken($userId, $token, $expires)) {
@@ -299,13 +300,12 @@ class UserController
                         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
                         $mail->Port = 587;
 
-                        $mail->Username = 'wunnatunsai940@gmail.com'; // YOUR gmail email
-                        $mail->Password = 'xalb lxqr tzgi lxln'; // YOUR gmail password
+                        $mail->Username = 'wunnatunsai940@gmail.com'; 
+                        $mail->Password = 'xalb lxqr tzgi lxln'; 
 
                         // Sender and recipient settings
                         $mail->setFrom('no-reply@example.com', 'Admin');
                         $mail->addAddress($email, $user['username']);
-                        // $mail->addReplyTo('example@gmail.com', 'Sender Name'); 
 
 
                         // Setting the email content

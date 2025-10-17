@@ -10,9 +10,10 @@ import { useGetNotificationsQuery } from "@/api/apiSlice";
 import { useAcceptInviationMutation } from "@/api/apiSlice";
 import { useDeclineInvitationMutation } from "@/api/apiSlice";
 import { useDeleteNotificationMutation } from "@/api/apiSlice";
+import { useClearAllNotificationsMutation } from "@/api/apiSlice";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/app/store";
-import { parseISO, formatDistanceToNow } from 'date-fns';
+import { parseISO, formatDistanceToNow } from "date-fns";
 
 const Notifications = () => {
   const { user } = useSelector((state: RootState) => state.auth);
@@ -79,6 +80,23 @@ const Notifications = () => {
     }
   };
 
+  //handle clear all notifications 
+  const [ clearAllNotifications ] = useClearAllNotificationsMutation();
+  const hadleClearAll = async() => {
+    try {
+      await clearAllNotifications(user?.id ?? '').unwrap();
+      SuccessToast("All Notifications were Cleared!");
+    } catch (err) {
+      console.error(err);
+      if (err && typeof err === "object" && "data" in err) {
+        const typedErr = err as { data?: { error?: string } };
+        ErrorToast("Something went wrong! ", typedErr.data?.error);
+      } else {
+        ErrorToast("Something went wrong");
+      }
+    }
+  }
+
   let content;
   if (isLoading) {
     content = (
@@ -103,10 +121,10 @@ const Notifications = () => {
           "Role Change": "bg-chart-3 text-foreground",
         };
 
-        let timeAgo = ''
-        const date = parseISO(notification.created_at)
-        const timePeriod = formatDistanceToNow(date)
-        timeAgo = `${timePeriod} ago`
+        let timeAgo = "";
+        const date = parseISO(notification.created_at);
+        const timePeriod = formatDistanceToNow(date);
+        timeAgo = `${timePeriod} ago`;
         return (
           <div
             key={notification.id}
@@ -175,8 +193,17 @@ const Notifications = () => {
   }
   return (
     <PopoverContent className="z-50 absolute top-0 right-0 w-[50rem] rounded-lg border bg-popover p-4 text-popover-foreground shadow-lg outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2">
-      <div className="flex flex-col gap-2">
+      {/* <div className="flex flex-col gap-2">
         <h3 className="text-sm font-semibold">Notifications</h3>
+        <ScrollArea className="h-[400px] p-2">{content}</ScrollArea>
+      </div> */}
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-semibold">Notifications</h3>
+          <button className="text-xs text-muted-foreground hover:text-destructive cursor-pointer" onClick={hadleClearAll}>
+            Clear all
+          </button>
+        </div>
         <ScrollArea className="h-[400px] p-2">{content}</ScrollArea>
       </div>
     </PopoverContent>

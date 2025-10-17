@@ -67,6 +67,7 @@ class User
 
         return false;
     }
+    
 
     public function updateProfile($name, $email, $profile, $userId, $currentPassword = null, $newPassword = null)
     {

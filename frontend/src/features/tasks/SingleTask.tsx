@@ -425,7 +425,7 @@ const SingleTask = () => {
                         src={`${backendURL}/${comment.user.profile_url}`}
                         alt={comment.user.username}
                       />
-                      <AvatarFallback>CN</AvatarFallback>
+                      <AvatarFallback>{comment.user.username.slice(0,2)}</AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col">
                       <div className="flex items-center gap-2 text-sm">

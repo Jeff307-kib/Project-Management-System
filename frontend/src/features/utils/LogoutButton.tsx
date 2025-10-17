@@ -19,11 +19,11 @@ const LogoutButton = ({ isDropdownItem = false }: LogoutButtonProps) => {
     try {
       await logoutUser().unwrap();
       dispatch(logout());
-      navigate("/registration");
+      navigate("/");
     } catch (err) {
       console.error("Failed to log out:", err);
       dispatch(logout());
-      navigate("/registration");
+      navigate("/");
     }
   };
 
