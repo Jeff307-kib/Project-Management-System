@@ -3,7 +3,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -122,9 +121,6 @@ const LogInTab = () => {
               Log In
             </Button>
           </CardContent>
-          <CardFooter className="flex flex-col mt-3">
-            <p>Log In with Google</p>
-          </CardFooter>
         </form>
       </Card>
       <ForgotPassword isOpen={isOpen} setOpen={handleModal}/>

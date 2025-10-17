@@ -64,7 +64,7 @@ const ResetPasswordForm = () => {
       const result = await resetPassword({ token, password }).unwrap();
 
       SuccessToast("Success", result.message);
-      navigate('/registration')
+      navigate('/')
     } catch (error) {
       console.error("Password reset failed:", error);
       setMessage("Password reset failed.");

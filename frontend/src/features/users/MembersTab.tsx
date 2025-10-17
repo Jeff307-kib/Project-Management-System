@@ -37,10 +37,13 @@ import { useChangeMemberRoleMutation } from "@/api/apiSlice";
 import { useRemoveMemberMutation } from "@/api/apiSlice";
 import { useParams } from "react-router-dom";
 import { useOutletContext } from "react-router-dom";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/app/store";
 
 type OutletContextType = { role: string };
 
 const MembersTab = () => {
+  const { user } = useSelector((state: RootState) => state.auth)
   const { workspaceId = "" } = useParams();
   const { role } = useOutletContext<OutletContextType>();
   const backendURL = "http://localhost/projectManagementSystem/backend/public";
@@ -185,6 +188,7 @@ const MembersTab = () => {
                 <DropdownMenuItem
                   className="text-destructive"
                   onClick={() => handleRemoveMember(member.id)}
+                  disabled={user?.id === member.id}
                 >
                   Remove From Workspace
                 </DropdownMenuItem>

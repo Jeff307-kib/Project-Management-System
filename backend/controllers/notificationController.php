@@ -104,7 +104,7 @@ class notificationController
 
             $notification = $this->noti->fetchNotificationById($notificationId);
 
-            if (!$notification || $notification['status'] !== 'Pending' || $notification['type'] !== 'Invitation') {
+            if (!$notification || $notification['invitation_status'] !== 'Pending' || $notification['type'] !== 'Invitation') {
                 http_response_code(404);
                 echo json_encode(['error' => 'Invitation not found or not pending.']);
                 return;
@@ -117,7 +117,7 @@ class notificationController
             $user = $this->user->fetchUserById($notification['recipient_id']);
 
             $invitationReply = "Invitation Declined! " . $user['email'] . " declined your invitation to " . $workspace['name'] . " .";
-            $this->noti->sendReply($notification['sender_id'], $notification['recipient_id'], 'Invitation Reply', $workspace['id'], 'Unread', $invitationReply);
+            $this->noti->sendReply($notification['sender_id'], $notification['recipient_id'], 'Invitation Reply', $workspace['id'], $invitationReply);
 
             $this->noti->dropNotification($notificationId);
 
@@ -173,6 +173,28 @@ class notificationController
                 'message' => 'Notifications marked as read!',
             ]);
 
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Unexpected Error Occured: ' . $e->getMessage()]);
+        }
+    }
+
+    function clearAllNotifications() {
+        $data = json_decode(file_get_contents("php://input"), true);
+        if (empty($data['userId'])) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Missing User Id!']);
+            return;
+        }
+
+        try {
+            $userId = $data['userId'];
+
+            $this->noti->clearAllNotification($userId);
+            echo json_encode([
+                'success' => true,
+                'message' => "Messages cleared!",
+            ]);
         } catch (Exception $e) {
             http_response_code(500);
             echo json_encode(['error' => 'Unexpected Error Occured: ' . $e->getMessage()]);

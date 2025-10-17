@@ -111,4 +111,17 @@ class Notification {
 
         return false;
     }
+
+    public function clearAllNotification($userId) {
+        $this->conn = Connection::connect();
+        $sql = "DELETE FROM notifications WHERE recipient_id = :ri";
+        $this->stmt = $this->conn->prepare($sql);
+        $this->stmt->bindParam(":ri", $userId);
+
+        if ($this->stmt->execute()) {
+            return true;
+        }
+
+        return false;
+    }
 }

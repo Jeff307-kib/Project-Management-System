@@ -96,7 +96,6 @@ const ReportTab = () => {
               <TableRow>
                 <TableHead className="w-12">#</TableHead>
                 <TableHead>Task Name</TableHead>
-                <TableHead>Assigned To</TableHead>
                 <TableHead>Due Date</TableHead>
                 <TableHead>Priority</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -111,7 +110,6 @@ const ReportTab = () => {
                   >
                     <TableCell>{index + 1}</TableCell>
                     <Link to={`/workspace/${workspaceId}/tasks/${task.id}`} className="text-blue-500 hover:underline cursor-pointer"><TableCell className="font-medium">{task.title}</TableCell></Link>
-                    <TableCell>{"Unassigned"}</TableCell>
                     <TableCell>
                       {new Date(task.due_date).toLocaleDateString() ?? "—"}
                     </TableCell>
