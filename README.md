@@ -52,10 +52,3 @@ npm run dev
 ```arduino
 http://localhost:5173
 ```
-
-## Additional Information
-
-Email: wunnatunsai940@gmail.com 
-Password: Wunna@123456
-
-Note: You can use this information to log in and test use the website. 
